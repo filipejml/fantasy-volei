@@ -24,9 +24,9 @@
     </div>
 
     <div>
-        <x-input-label for="api_team_id" value="ID na API (opcional)" />
-        <x-text-input id="api_team_id" name="api_team_id" type="number" min="1" class="mt-2 block w-full" :value="old('api_team_id', $selecao?->api_team_id)" />
-        <x-input-error :messages="$errors->get('api_team_id')" class="mt-2" />
+        <x-input-label for="external_ref" value="Identificador externo (opcional)" />
+        <x-text-input id="external_ref" name="external_ref" class="mt-2 block w-full" :value="old('external_ref', $selecao?->external_ref)" />
+        <x-input-error :messages="$errors->get('external_ref')" class="mt-2" />
     </div>
 
     <div>
@@ -42,6 +42,12 @@
         <x-input-label for="bandeira" value="URL da bandeira (opcional)" />
         <x-text-input id="bandeira" name="bandeira" type="url" class="mt-2 block w-full" :value="old('bandeira', $selecao?->bandeira)" placeholder="https://..." />
         <x-input-error :messages="$errors->get('bandeira')" class="mt-2" />
+    </div>
+
+    <div class="md:col-span-2">
+        <x-input-label for="source_url" value="URL de origem (opcional)" />
+        <x-text-input id="source_url" name="source_url" type="url" class="mt-2 block w-full" :value="old('source_url', $selecao?->source_url)" placeholder="https://en.volleyballworld.com/..." />
+        <x-input-error :messages="$errors->get('source_url')" class="mt-2" />
     </div>
 </div>
 

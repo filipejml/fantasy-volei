@@ -18,8 +18,9 @@ class SelecaoRequest extends FormRequest
             'nome' => ['required', 'string', 'max:255'],
             'genero' => ['required', Rule::in(['masculino', 'feminino'])],
             'sigla' => ['nullable', 'string', 'max:5'],
-            'api_team_id' => ['nullable', 'integer', 'min:1'],
+            'external_ref' => ['nullable', 'string', 'max:100'],
             'bandeira' => ['nullable', 'url', 'max:2048'],
+            'source_url' => ['nullable', 'url', 'max:2048'],
             'ativo' => ['required', 'boolean'],
         ];
     }

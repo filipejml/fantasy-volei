@@ -17,7 +17,6 @@ class Jogador extends Model
         'genero',
         'valor_creditos',
         'media_pontos',
-        'api_player_id',
         'idade',
         'altura',
         'foto',
@@ -31,7 +30,6 @@ class Jogador extends Model
             'media_pontos' => 'decimal:2',
             'altura' => 'decimal:2',
             'ativo' => 'boolean',
-            'api_player_id' => 'integer',
             'idade' => 'integer',
         ];
     }
@@ -44,5 +42,10 @@ class Jogador extends Model
     public function posicao(): BelongsTo
     {
         return $this->belongsTo(Posicao::class);
+    }
+
+    public function times()
+    {
+        return $this->belongsToMany(Time::class, 'time_jogadors')->withTimestamps();
     }
 }

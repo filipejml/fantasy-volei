@@ -2,68 +2,45 @@
 
 namespace Tests\Feature;
 
+use App\Models\Classificacao;
+use App\Models\Partida;
+use App\Models\Selecao;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
 
 class VnlPageTest extends TestCase
 {
     use RefreshDatabase;
 
-    protected function setUp(): void
+    public function test_authenticated_user_can_see_persisted_scores_and_standings(): void
     {
-        parent::setUp();
+        $brasil = Selecao::create(['nome' => 'Brasil', 'sigla' => 'BRA', 'genero' => 'masculino', 'ativo' => true]);
+        $italia = Selecao::create(['nome' => 'Itália', 'sigla' => 'ITA', 'genero' => 'masculino', 'ativo' => true]);
 
-        Cache::flush();
-
-        config()->set('services.api_sports_volleyball', [
-            'base_url' => 'https://v1.volleyball.api-sports.io',
-            'key' => 'test-key',
-            'season' => 2026,
-            'cache_seconds' => 900,
-            'leagues' => [
-                'masculino' => 100,
-                'feminino' => 101,
-            ],
+        Partida::create([
+            'genero' => 'masculino',
+            'temporada' => 2026,
+            'selecao_casa_id' => $brasil->id,
+            'selecao_fora_id' => $italia->id,
+            'data_partida' => '2026-06-23 18:00:00',
+            'placar_casa' => 3,
+            'placar_fora' => 1,
+            'status' => 'encerrado',
+            'origem' => 'manual',
         ]);
-    }
 
-    public function test_authenticated_user_can_see_vnl_scores_and_standings(): void
-    {
-        Http::fake([
-            '*/games*' => Http::response([
-                'errors' => [],
-                'response' => [[
-                    'id' => 1,
-                    'date' => '2026-06-23T18:00:00+00:00',
-                    'timestamp' => 1782237600,
-                    'status' => ['long' => 'Finished'],
-                    'teams' => [
-                        'home' => ['name' => 'Brasil', 'logo' => null],
-                        'away' => ['name' => 'Itália', 'logo' => null],
-                    ],
-                    'scores' => ['home' => 3, 'away' => 1],
-                ]],
-            ]),
-            '*/standings*' => Http::response([
-                'errors' => [],
-                'response' => [[
-                    'league' => ['id' => 100],
-                    'standings' => [[[
-                        'position' => 1,
-                        'team' => ['name' => 'Brasil', 'logo' => null],
-                        'games' => [
-                            'played' => 4,
-                            'win' => ['total' => 4],
-                            'lose' => ['total' => 0],
-                        ],
-                        'sets' => ['for' => 12, 'against' => 2],
-                        'points' => 12,
-                    ]]],
-                ]],
-            ]),
+        Classificacao::create([
+            'selecao_id' => $brasil->id,
+            'genero' => 'masculino',
+            'temporada' => 2026,
+            'posicao' => 1,
+            'jogos' => 1,
+            'vitorias' => 1,
+            'derrotas' => 0,
+            'pontos' => 3,
+            'sets_pro' => 3,
+            'sets_contra' => 1,
         ]);
 
         $user = User::factory()->create();
@@ -73,29 +50,22 @@ class VnlPageTest extends TestCase
             ->assertOk()
             ->assertSee('Brasil')
             ->assertSee('Itália')
-            ->assertSee('3')
             ->assertSee('Classificação');
-
-        Http::assertSentCount(2);
     }
 
-    public function test_vnl_page_shows_configuration_message_without_api_key(): void
+    public function test_vnl_page_works_without_scraped_data(): void
     {
-        config()->set('services.api_sports_volleyball.key', null);
-
         $user = User::factory()->create();
 
         $this->actingAs($user)
             ->get(route('vnl.index'))
             ->assertOk()
-            ->assertSee('ainda não foi configurada');
-
-        Http::assertNothingSent();
+            ->assertSee('Nenhuma partida cadastrada')
+            ->assertSee('Classificação ainda não cadastrada');
     }
 
     public function test_vnl_page_requires_authentication(): void
     {
-        $this->get(route('vnl.index'))
-            ->assertRedirect(route('login'));
+        $this->get(route('vnl.index'))->assertRedirect(route('login'));
     }
 }

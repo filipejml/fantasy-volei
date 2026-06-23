@@ -1,0 +1,1 @@
+<x-app-layout><x-slot name="header"><h2 class="text-xl font-bold">Cadastrar posição</h2></x-slot><div class="py-8"><form method="POST" action="{{ route('admin.posicoes.store') }}" class="mx-auto max-w-xl rounded-2xl bg-white p-7">@csrf @include('admin.posicoes._form',['submitLabel'=>'Cadastrar'])</form></div></x-app-layout>

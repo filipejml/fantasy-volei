@@ -27,6 +27,18 @@
                         <p class="mt-2 text-slate-500">Controle atletas, posições, valores e disponibilidade.</p>
                         <span class="mt-5 inline-block font-bold text-blue-700 group-hover:text-blue-900">Acessar →</span>
                     </a>
+                    <a href="{{ route('admin.partidas.index') }}" class="group rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200 transition hover:-translate-y-1 hover:shadow-lg">
+                        <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-100 text-2xl">📅</div>
+                        <h2 class="mt-5 text-xl font-extrabold text-slate-900">Partidas e resultados</h2>
+                        <p class="mt-2 text-slate-500">Cadastre ou corrija manualmente jogos e placares.</p>
+                        <span class="mt-5 inline-block font-bold text-blue-700">Acessar →</span>
+                    </a>
+                    <a href="{{ route('admin.scraping.index') }}" class="group rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200 transition hover:-translate-y-1 hover:shadow-lg">
+                        <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-violet-100 text-2xl">↻</div>
+                        <h2 class="mt-5 text-xl font-extrabold text-slate-900">Atualizar VNL</h2>
+                        <p class="mt-2 text-slate-500">Execute o scraping e consulte logs de importação.</p>
+                        <span class="mt-5 inline-block font-bold text-blue-700">Acessar →</span>
+                    </a>
                 </div>
             @else
                 <div class="overflow-hidden bg-white p-6 shadow-sm sm:rounded-lg">

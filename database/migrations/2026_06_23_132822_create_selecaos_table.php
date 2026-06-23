@@ -17,8 +17,6 @@ return new class extends Migration
 
             $table->string('sigla', 5)->nullable();
 
-            $table->integer('api_team_id')->nullable();
-
             $table->string('bandeira')->nullable();
 
             $table->boolean('ativo')->default(true);

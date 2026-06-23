@@ -34,7 +34,6 @@ class AdminCrudTest extends TestCase
             'nome' => 'Brasil',
             'genero' => 'masculino',
             'sigla' => 'BRA',
-            'api_team_id' => 10,
             'bandeira' => 'https://example.com/brasil.png',
             'ativo' => 1,
         ]);
@@ -47,7 +46,6 @@ class AdminCrudTest extends TestCase
             'nome' => 'Brasil Vôlei',
             'genero' => 'masculino',
             'sigla' => 'BRA',
-            'api_team_id' => 10,
             'bandeira' => 'https://example.com/brasil.png',
             'ativo' => 1,
         ])->assertRedirect(route('admin.selecoes.show', $selecao));

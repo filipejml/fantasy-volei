@@ -16,8 +16,9 @@ class Selecao extends Model
         'nome',
         'genero',
         'sigla',
-        'api_team_id',
+        'external_ref',
         'bandeira',
+        'source_url',
         'ativo',
     ];
 
@@ -25,12 +26,26 @@ class Selecao extends Model
     {
         return [
             'ativo' => 'boolean',
-            'api_team_id' => 'integer',
         ];
     }
 
     public function jogadores(): HasMany
     {
         return $this->hasMany(Jogador::class);
+    }
+
+    public function partidasCasa(): HasMany
+    {
+        return $this->hasMany(Partida::class, 'selecao_casa_id');
+    }
+
+    public function partidasFora(): HasMany
+    {
+        return $this->hasMany(Partida::class, 'selecao_fora_id');
+    }
+
+    public function classificacoes(): HasMany
+    {
+        return $this->hasMany(Classificacao::class);
     }
 }

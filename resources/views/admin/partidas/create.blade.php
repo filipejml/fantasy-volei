@@ -1,0 +1,1 @@
+<x-app-layout><x-slot name="header"><h2 class="text-xl font-bold">Cadastrar partida</h2></x-slot><div class="py-8"><form method="POST" action="{{ route('admin.partidas.store') }}" class="mx-auto max-w-4xl rounded-2xl bg-white p-7 shadow-sm">@csrf @include('admin.partidas._form',['submitLabel'=>'Cadastrar'])</form></div></x-app-layout>

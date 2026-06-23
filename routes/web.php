@@ -1,8 +1,13 @@
 <?php
 
+use App\Http\Controllers\ClassificacaoController;
 use App\Http\Controllers\JogadorController;
+use App\Http\Controllers\PartidaController;
+use App\Http\Controllers\PosicaoController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ScrapingController;
 use App\Http\Controllers\SelecaoController;
+use App\Http\Controllers\TimeController;
 use App\Http\Controllers\VnlController;
 use Illuminate\Support\Facades\Route;
 
@@ -14,6 +19,10 @@ Route::get('/dashboard', function () {
 
 Route::middleware('auth')->group(function () {
     Route::get('/vnl', [VnlController::class, 'index'])->name('vnl.index');
+    Route::post('/meus-times/sugerir', [TimeController::class, 'sugerir'])->name('times.sugerir');
+    Route::resource('meus-times', TimeController::class)
+        ->parameters(['meus-times' => 'time'])
+        ->names('times');
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
@@ -27,6 +36,16 @@ Route::middleware(['auth', 'admin'])
             ->parameters(['selecoes' => 'selecao']);
         Route::resource('jogadores', JogadorController::class)
             ->parameters(['jogadores' => 'jogador']);
+        Route::resource('posicoes', PosicaoController::class)
+            ->parameters(['posicoes' => 'posicao']);
+        Route::resource('partidas', PartidaController::class)
+            ->parameters(['partidas' => 'partida']);
+        Route::resource('classificacoes', ClassificacaoController::class)
+            ->except('show')
+            ->parameters(['classificacoes' => 'classificacao']);
+        Route::post('classificacoes/calcular', [ClassificacaoController::class, 'calcular'])->name('classificacoes.calcular');
+        Route::get('scraping', [ScrapingController::class, 'index'])->name('scraping.index');
+        Route::post('scraping/atualizar', [ScrapingController::class, 'atualizar'])->name('scraping.atualizar');
     });
 
 require __DIR__.'/auth.php';

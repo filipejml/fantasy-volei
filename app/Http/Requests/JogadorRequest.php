@@ -21,7 +21,6 @@ class JogadorRequest extends FormRequest
             'genero' => ['required', Rule::in(['masculino', 'feminino'])],
             'valor_creditos' => ['required', 'numeric', 'min:0', 'max:999999.99'],
             'media_pontos' => ['nullable', 'numeric', 'min:0', 'max:999999.99'],
-            'api_player_id' => ['nullable', 'integer', 'min:1'],
             'idade' => ['nullable', 'integer', 'min:14', 'max:60'],
             'altura' => ['nullable', 'numeric', 'min:1', 'max:3'],
             'foto' => ['nullable', 'url', 'max:2048'],

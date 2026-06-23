@@ -1,0 +1,1 @@
+<x-app-layout><x-slot name="header"><h2 class="text-xl font-bold">Editar posição</h2></x-slot><div class="py-8"><form method="POST" action="{{ route('admin.posicoes.update',$posicao) }}" class="mx-auto max-w-xl rounded-2xl bg-white p-7">@csrf @method('PUT') @include('admin.posicoes._form',['submitLabel'=>'Salvar'])</form></div></x-app-layout>

@@ -29,9 +29,6 @@ return new class extends Migration
             $table->decimal('media_pontos', 8, 2)
                 ->default(0);
 
-            $table->integer('api_player_id')
-                ->nullable();
-
             $table->integer('idade')
                 ->nullable();
 

@@ -35,15 +35,12 @@ return [
         ],
     ],
 
-    'api_sports_volleyball' => [
-        'base_url' => env('API_SPORTS_VOLLEYBALL_URL', 'https://v1.volleyball.api-sports.io'),
-        'key' => env('API_SPORTS_VOLLEYBALL_KEY'),
-        'season' => env('API_SPORTS_VOLLEYBALL_SEASON', now()->year),
-        'cache_seconds' => (int) env('API_SPORTS_VOLLEYBALL_CACHE_SECONDS', 900),
-        'leagues' => [
-            'masculino' => env('API_SPORTS_VNL_MEN_LEAGUE_ID'),
-            'feminino' => env('API_SPORTS_VNL_WOMEN_LEAGUE_ID'),
-        ],
+    'volleyball_world' => [
+        'base_url' => env('VOLLEYBALL_WORLD_URL', 'https://en.volleyballworld.com'),
+        'season' => (int) env('VNL_SEASON', now()->year),
+        'tournaments' => env('VNL_TOURNAMENT_IDS', '1661;1662'),
+        'schedule_from' => env('VNL_SCHEDULE_FROM', now()->startOfYear()->toDateString()),
+        'schedule_to' => env('VNL_SCHEDULE_TO', now()->endOfYear()->toDateString()),
     ],
 
 ];

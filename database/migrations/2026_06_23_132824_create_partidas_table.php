@@ -12,9 +12,6 @@ return new class extends Migration
 
             $table->id();
 
-            $table->integer('api_game_id')
-                ->nullable();
-
             $table->foreignId('selecao_casa_id')
                 ->constrained('selecoes');
 

@@ -1,0 +1,1 @@
+<x-app-layout><x-slot name="header"><h2 class="text-xl font-bold">Cadastrar classificação</h2></x-slot><div class="py-8"><form method="POST" action="{{ route('admin.classificacoes.store') }}" class="mx-auto max-w-4xl rounded-2xl bg-white p-7">@csrf @include('admin.classificacoes._form',['submitLabel'=>'Salvar'])</form></div></x-app-layout>

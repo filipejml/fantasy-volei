@@ -21,6 +21,9 @@
                     <x-nav-link :href="route('vnl.index')" :active="request()->routeIs('vnl.*')">
                         VNL
                     </x-nav-link>
+                    <x-nav-link :href="route('times.index')" :active="request()->routeIs('times.*')">
+                        Meu time
+                    </x-nav-link>
 
                     @if (Auth::user()->isAdmin())
                         <x-nav-link :href="route('admin.selecoes.index')" :active="request()->routeIs('admin.selecoes.*')">
@@ -29,6 +32,8 @@
                         <x-nav-link :href="route('admin.jogadores.index')" :active="request()->routeIs('admin.jogadores.*')">
                             Jogadores
                         </x-nav-link>
+                        <x-nav-link :href="route('admin.partidas.index')" :active="request()->routeIs('admin.partidas.*')">Partidas</x-nav-link>
+                        <x-nav-link :href="route('admin.scraping.index')" :active="request()->routeIs('admin.scraping.*')">Atualizar VNL</x-nav-link>
                     @endif
                 </div>
             </div>
@@ -88,6 +93,7 @@
             <x-responsive-nav-link :href="route('vnl.index')" :active="request()->routeIs('vnl.*')">
                 VNL
             </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('times.index')" :active="request()->routeIs('times.*')">Meu time</x-responsive-nav-link>
 
             @if (Auth::user()->isAdmin())
                 <x-responsive-nav-link :href="route('admin.selecoes.index')" :active="request()->routeIs('admin.selecoes.*')">
@@ -96,6 +102,10 @@
                 <x-responsive-nav-link :href="route('admin.jogadores.index')" :active="request()->routeIs('admin.jogadores.*')">
                     Jogadores
                 </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('admin.partidas.index')" :active="request()->routeIs('admin.partidas.*')">Partidas</x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('admin.classificacoes.index')" :active="request()->routeIs('admin.classificacoes.*')">Classificação</x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('admin.posicoes.index')" :active="request()->routeIs('admin.posicoes.*')">Posições</x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('admin.scraping.index')" :active="request()->routeIs('admin.scraping.*')">Atualizar VNL</x-responsive-nav-link>
             @endif
         </div>
 

@@ -77,12 +77,6 @@
     </div>
 
     <div>
-        <x-input-label for="api_player_id" value="ID na API (opcional)" />
-        <x-text-input id="api_player_id" name="api_player_id" type="number" min="1" class="mt-2 block w-full" :value="old('api_player_id', $jogador?->api_player_id)" />
-        <x-input-error :messages="$errors->get('api_player_id')" class="mt-2" />
-    </div>
-
-    <div>
         <x-input-label for="foto" value="URL da foto (opcional)" />
         <x-text-input id="foto" name="foto" type="url" class="mt-2 block w-full" :value="old('foto', $jogador?->foto)" placeholder="https://..." />
         <x-input-error :messages="$errors->get('foto')" class="mt-2" />
