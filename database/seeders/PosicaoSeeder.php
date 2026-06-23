@@ -2,7 +2,7 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use App\Models\Posicao;
 use Illuminate\Database\Seeder;
 
 class PosicaoSeeder extends Seeder
@@ -12,6 +12,16 @@ class PosicaoSeeder extends Seeder
      */
     public function run(): void
     {
-        //
+        $posicoes = [
+            ['nome' => 'Levantador', 'sigla' => 'LEV'],
+            ['nome' => 'Oposto', 'sigla' => 'OPO'],
+            ['nome' => 'Ponteiro', 'sigla' => 'PON'],
+            ['nome' => 'Central', 'sigla' => 'CEN'],
+            ['nome' => 'Líbero', 'sigla' => 'LIB'],
+        ];
+
+        foreach ($posicoes as $posicao) {
+            Posicao::updateOrCreate(['sigla' => $posicao['sigla']], $posicao);
+        }
     }
 }
