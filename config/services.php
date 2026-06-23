@@ -35,4 +35,15 @@ return [
         ],
     ],
 
+    'api_sports_volleyball' => [
+        'base_url' => env('API_SPORTS_VOLLEYBALL_URL', 'https://v1.volleyball.api-sports.io'),
+        'key' => env('API_SPORTS_VOLLEYBALL_KEY'),
+        'season' => env('API_SPORTS_VOLLEYBALL_SEASON', now()->year),
+        'cache_seconds' => (int) env('API_SPORTS_VOLLEYBALL_CACHE_SECONDS', 900),
+        'leagues' => [
+            'masculino' => env('API_SPORTS_VNL_MEN_LEAGUE_ID'),
+            'feminino' => env('API_SPORTS_VNL_WOMEN_LEAGUE_ID'),
+        ],
+    ],
+
 ];
