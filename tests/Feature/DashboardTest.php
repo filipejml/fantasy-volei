@@ -83,4 +83,29 @@ class DashboardTest extends TestCase
             ->assertSee('Set atual: 12 x 9')
             ->assertSee('window.location.reload');
     }
+
+    public function test_admin_links_are_in_navigation_not_dashboard_panel(): void
+    {
+        $this->actingAs(User::factory()->create(['role' => 0]))
+            ->get(route('dashboard'))
+            ->assertOk()
+            ->assertSee('Admin')
+            ->assertSee('Seleções')
+            ->assertSee('Classificação')
+            ->assertSee('Posições')
+            ->assertSee('Atualizar VNL')
+            ->assertDontSee('Painel administrativo')
+            ->assertDontSee('Gerenciar seleções')
+            ->assertDontSee('Gerenciar jogadores');
+    }
+
+    public function test_regular_user_does_not_see_admin_navigation(): void
+    {
+        $this->actingAs(User::factory()->create(['role' => 1]))
+            ->get(route('dashboard'))
+            ->assertOk()
+            ->assertDontSee('Admin')
+            ->assertDontSee('Seleções')
+            ->assertDontSee('Atualizar VNL');
+    }
 }
