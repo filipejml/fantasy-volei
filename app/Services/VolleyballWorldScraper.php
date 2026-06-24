@@ -280,30 +280,66 @@ class VolleyballWorldScraper
         $jogadores = 0;
         $selecoes = 0;
         $sourceUrls = [];
+        $erros = [];
 
         foreach (['masculino' => 'men', 'feminino' => 'women'] as $genero => $segmento) {
-            $url = "{$this->baseUrl()}/volleyball/competitions/volleyball-nations-league/teams/{$segmento}/";
-            $sourceUrls[] = $url;
-            $times = $this->parseLinksTimes($this->get($url)->body(), $segmento);
+            $times = Selecao::query()
+                ->where('genero', $genero)
+                ->whereNotNull('external_ref')
+                ->orderBy('nome')
+                ->get()
+                ->map(fn (Selecao $selecao) => [
+                    'nome' => $selecao->nome,
+                    'sigla' => $selecao->sigla,
+                    'external_ref' => $selecao->external_ref,
+                    'url' => "{$this->baseUrl()}/volleyball/competitions/volleyball-nations-league/teams/{$segmento}/{$selecao->external_ref}/schedule/",
+                ])
+                ->values()
+                ->all();
+
+            if ($times === []) {
+                $url = "{$this->baseUrl()}/volleyball/competitions/volleyball-nations-league/teams/{$segmento}/";
+                $sourceUrls[] = $url;
+
+                try {
+                    $times = $this->parseLinksTimes($this->get($url)->body(), $segmento);
+                } catch (Throwable $exception) {
+                    $erros[] = "{$url}: {$exception->getMessage()}";
+                    continue;
+                }
+            }
 
             foreach ($times as $time) {
+                $dadosSelecao = [
+                    'nome' => $this->nomeSelecaoPtBr($time['nome'], $time['sigla']),
+                    'source_url' => $time['url'],
+                    'ativo' => true,
+                ];
+
+                if (isset($time['external_ref'])) {
+                    $dadosSelecao['external_ref'] = $time['external_ref'];
+                }
+
                 $selecao = Selecao::updateOrCreate(
                     [
                         'sigla' => $time['sigla'],
                         'genero' => $genero,
                     ],
-                    [
-                        'nome' => $this->nomeSelecaoPtBr($time['nome'], $time['sigla']),
-                        'source_url' => $time['url'],
-                        'ativo' => true,
-                    ]
+                    $dadosSelecao
                 );
 
                 $selecoes++;
                 $playersUrl = str_replace('/schedule/', '/players/', $time['url']);
                 $sourceUrls[] = $playersUrl;
 
-                foreach ($this->parseJogadoresHtml($this->get($playersUrl)->body()) as $jogador) {
+                try {
+                    $jogadoresImportados = $this->parseJogadoresHtml($this->get($playersUrl)->body());
+                } catch (Throwable $exception) {
+                    $erros[] = "{$playersUrl}: {$exception->getMessage()}";
+                    continue;
+                }
+
+                foreach ($jogadoresImportados as $jogador) {
                     $posicao = $this->posicaoPorCodigo($jogador['posicao']);
 
                     Jogador::updateOrCreate(
@@ -329,11 +365,16 @@ class VolleyballWorldScraper
             'selecoes' => $selecoes,
             'jogadores' => $jogadores,
             'source_urls' => array_values(array_unique($sourceUrls)),
+            'erros' => $erros,
         ];
     }
 
     public function parseLinksTimes(string $html, string $segmento): array
     {
+        if (trim($html) === '') {
+            return [];
+        }
+
         libxml_use_internal_errors(true);
         $document = new DOMDocument();
         $document->loadHTML($html);
@@ -366,6 +407,10 @@ class VolleyballWorldScraper
 
     public function parseJogadoresHtml(string $html): array
     {
+        if (trim($html) === '') {
+            return [];
+        }
+
         libxml_use_internal_errors(true);
         $document = new DOMDocument();
         $document->loadHTML($html);
@@ -410,8 +455,14 @@ class VolleyballWorldScraper
                 continue;
             }
 
+            $nome = trim(implode(' ', array_slice($textos, 1, -1)));
+
+            if ($nome === '') {
+                continue;
+            }
+
             $jogadores[] = [
-                'nome' => $textos[1],
+                'nome' => $nome,
                 'posicao' => $posicao,
             ];
         }

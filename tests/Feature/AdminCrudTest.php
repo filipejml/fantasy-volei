@@ -95,6 +95,11 @@ class AdminCrudTest extends TestCase
             'sigla' => 'PON',
         ]);
 
+        $this->actingAs($admin)
+            ->get(route('admin.jogadores.index'))
+            ->assertOk()
+            ->assertSee('Atualizar da Volleyball World');
+
         $response = $this->actingAs($admin)->post(route('admin.jogadores.store'), [
             'selecao_id' => $selecao->id,
             'posicao_id' => $posicao->id,
@@ -131,5 +136,78 @@ class AdminCrudTest extends TestCase
             ->assertRedirect(route('admin.jogadores.index'));
 
         $this->assertDatabaseMissing('jogadors', ['id' => $jogador->id]);
+    }
+
+    public function test_admin_can_filter_jogadores_by_position(): void
+    {
+        $admin = User::factory()->create(['role' => 0]);
+        $selecao = Selecao::create(['nome' => 'Brasil', 'genero' => 'masculino', 'sigla' => 'BRA', 'ativo' => true]);
+        $ponteiro = Posicao::create(['nome' => 'Ponteiro', 'sigla' => 'PON']);
+        $libero = Posicao::create(['nome' => 'Líbero', 'sigla' => 'LIB']);
+
+        Jogador::create([
+            'selecao_id' => $selecao->id,
+            'posicao_id' => $ponteiro->id,
+            'nome' => 'Lucarelli',
+            'genero' => 'masculino',
+            'valor_creditos' => 10,
+            'media_pontos' => 0,
+            'ativo' => true,
+        ]);
+
+        Jogador::create([
+            'selecao_id' => $selecao->id,
+            'posicao_id' => $libero->id,
+            'nome' => 'Maique',
+            'genero' => 'masculino',
+            'valor_creditos' => 10,
+            'media_pontos' => 0,
+            'ativo' => true,
+        ]);
+
+        $this->actingAs($admin)
+            ->get(route('admin.jogadores.index', ['posicao_id' => $libero->id]))
+            ->assertOk()
+            ->assertSee('Todas as posições')
+            ->assertSee('Maique')
+            ->assertSee('LIB')
+            ->assertDontSee('Lucarelli');
+    }
+
+    public function test_admin_can_sort_jogadores_by_name_and_value(): void
+    {
+        $admin = User::factory()->create(['role' => 0]);
+        $selecao = Selecao::create(['nome' => 'Brasil', 'genero' => 'masculino', 'sigla' => 'BRA', 'ativo' => true]);
+        $posicao = Posicao::create(['nome' => 'Ponteiro', 'sigla' => 'PON']);
+
+        Jogador::create([
+            'selecao_id' => $selecao->id,
+            'posicao_id' => $posicao->id,
+            'nome' => 'Zed',
+            'genero' => 'masculino',
+            'valor_creditos' => 5,
+            'media_pontos' => 0,
+            'ativo' => true,
+        ]);
+
+        Jogador::create([
+            'selecao_id' => $selecao->id,
+            'posicao_id' => $posicao->id,
+            'nome' => 'Ana',
+            'genero' => 'masculino',
+            'valor_creditos' => 20,
+            'media_pontos' => 0,
+            'ativo' => true,
+        ]);
+
+        $this->actingAs($admin)
+            ->get(route('admin.jogadores.index', ['ordenar' => 'nome', 'direcao' => 'asc']))
+            ->assertOk()
+            ->assertSeeTextInOrder(['Ana', 'Zed']);
+
+        $this->actingAs($admin)
+            ->get(route('admin.jogadores.index', ['ordenar' => 'valor_creditos', 'direcao' => 'desc']))
+            ->assertOk()
+            ->assertSeeTextInOrder(['Ana', 'C$ 20,00', 'Zed', 'C$ 5,00']);
     }
 }

@@ -1,11 +1,32 @@
 <x-app-layout>
+    @php
+        $sortUrl = function (string $campo) use ($ordenarPor, $direcao) {
+            $novaDirecao = $ordenarPor === $campo && $direcao === 'asc' ? 'desc' : 'asc';
+
+            return route('admin.jogadores.index', array_merge(request()->query(), [
+                'ordenar' => $campo,
+                'direcao' => $novaDirecao,
+            ]));
+        };
+
+        $sortIcon = fn (string $campo) => $ordenarPor === $campo ? ($direcao === 'asc' ? '↑' : '↓') : '↕';
+    @endphp
+
     <x-slot name="header">
-        <div class="flex items-center justify-between">
+        <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
                 <h2 class="text-xl font-bold text-slate-900">Jogadores</h2>
                 <p class="mt-1 text-sm text-slate-500">Gerencie atletas, posições e valores.</p>
             </div>
-            <a href="{{ route('admin.jogadores.create') }}" class="rounded-lg bg-blue-700 px-4 py-2.5 text-sm font-bold text-white hover:bg-blue-800">Novo jogador</a>
+            <div class="flex flex-col gap-2 sm:flex-row">
+                <form method="POST" action="{{ route('admin.jogadores.atualizar-vw') }}" onsubmit="this.querySelector('button').disabled = true; this.querySelector('button').innerText = 'Atualizando...';">
+                    @csrf
+                    <button class="rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-bold text-white hover:bg-emerald-700">
+                        Atualizar da Volleyball World
+                    </button>
+                </form>
+                <a href="{{ route('admin.jogadores.create') }}" class="rounded-lg bg-blue-700 px-4 py-2.5 text-center text-sm font-bold text-white hover:bg-blue-800">Novo jogador</a>
+            </div>
         </div>
     </x-slot>
 
@@ -13,15 +34,27 @@
         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             @include('admin.partials.flash')
 
-            <form method="GET" class="mb-6 grid gap-3 rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-200 sm:grid-cols-[1fr_240px_auto]">
+            <form method="GET" class="mb-6 grid gap-3 rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-200 lg:grid-cols-[1fr_220px_220px_auto_auto]">
+                <input type="hidden" name="ordenar" value="{{ $ordenarPor }}">
+                <input type="hidden" name="direcao" value="{{ $direcao }}">
                 <input name="busca" value="{{ request('busca') }}" placeholder="Buscar por nome..." class="rounded-lg border-slate-300 focus:border-blue-500 focus:ring-blue-500">
+
                 <select name="selecao_id" class="rounded-lg border-slate-300 focus:border-blue-500 focus:ring-blue-500">
                     <option value="">Todas as seleções</option>
                     @foreach ($selecoes as $selecao)
                         <option value="{{ $selecao->id }}" @selected((string) request('selecao_id') === (string) $selecao->id)>{{ $selecao->nome }}</option>
                     @endforeach
                 </select>
+
+                <select name="posicao_id" class="rounded-lg border-slate-300 focus:border-blue-500 focus:ring-blue-500">
+                    <option value="">Todas as posições</option>
+                    @foreach ($posicoes as $posicao)
+                        <option value="{{ $posicao->id }}" @selected((string) request('posicao_id') === (string) $posicao->id)>{{ $posicao->nome }} ({{ $posicao->sigla }})</option>
+                    @endforeach
+                </select>
+
                 <button class="rounded-lg bg-slate-900 px-5 py-2.5 text-sm font-bold text-white hover:bg-slate-700">Filtrar</button>
+                <a href="{{ route('admin.jogadores.index') }}" class="rounded-lg bg-slate-100 px-5 py-2.5 text-center text-sm font-bold text-slate-700 hover:bg-slate-200">Limpar</a>
             </form>
 
             <div class="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-slate-200">
@@ -29,10 +62,18 @@
                     <table class="min-w-full divide-y divide-slate-200">
                         <thead class="bg-slate-50">
                             <tr>
-                                <th class="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider text-slate-500">Jogador</th>
-                                <th class="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider text-slate-500">Seleção</th>
-                                <th class="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider text-slate-500">Posição</th>
-                                <th class="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider text-slate-500">Valor</th>
+                                <th class="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider text-slate-500">
+                                    <a href="{{ $sortUrl('nome') }}" class="inline-flex items-center gap-1 hover:text-blue-700">Jogador <span>{{ $sortIcon('nome') }}</span></a>
+                                </th>
+                                <th class="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider text-slate-500">
+                                    <a href="{{ $sortUrl('selecao') }}" class="inline-flex items-center gap-1 hover:text-blue-700">Seleção <span>{{ $sortIcon('selecao') }}</span></a>
+                                </th>
+                                <th class="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider text-slate-500">
+                                    <a href="{{ $sortUrl('posicao') }}" class="inline-flex items-center gap-1 hover:text-blue-700">Posição <span>{{ $sortIcon('posicao') }}</span></a>
+                                </th>
+                                <th class="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider text-slate-500">
+                                    <a href="{{ $sortUrl('valor_creditos') }}" class="inline-flex items-center gap-1 hover:text-blue-700">Valor <span>{{ $sortIcon('valor_creditos') }}</span></a>
+                                </th>
                                 <th class="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider text-slate-500">Status</th>
                                 <th class="px-6 py-3 text-right text-xs font-bold uppercase tracking-wider text-slate-500">Ações</th>
                             </tr>

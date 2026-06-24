@@ -3,8 +3,10 @@
 namespace Tests\Feature;
 
 use App\Models\Classificacao;
+use App\Models\Jogador;
 use App\Models\Partida;
 use App\Models\ScrapingLog;
+use App\Models\Selecao;
 use App\Services\VolleyballWorldScraper;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
@@ -123,6 +125,74 @@ class VolleyballWorldScraperTest extends TestCase
 
         $this->assertNull($partida->placar_casa);
         $this->assertNull($partida->placar_fora);
+    }
+
+    public function test_scraper_imports_players_from_team_rosters(): void
+    {
+        config()->set('services.volleyball_world.base_url', 'https://en.volleyballworld.com');
+
+        Http::fake(function ($request) {
+            if (str_contains($request->url(), '/teams/men/') && ! str_contains($request->url(), '/players/')) {
+                return Http::response('
+                    <a href="/volleyball/competitions/volleyball-nations-league/teams/men/8601/schedule/">Brazil BRA</a>
+                ');
+            }
+
+            if (str_contains($request->url(), '/teams/women/') && ! str_contains($request->url(), '/players/')) {
+                return Http::response('');
+            }
+
+            if (str_contains($request->url(), '/teams/men/8601/players/')) {
+                return Http::response('
+                    <a href="/volleyball/players/100">1</a><a href="/volleyball/players/100">Bruno</a><a href="/volleyball/players/100">Rezende</a><a href="/volleyball/players/100">S</a>
+                    <a href="/volleyball/players/101">12</a><a href="/volleyball/players/101">Lucarelli</a><a href="/volleyball/players/101">OH</a>
+                    <a href="/volleyball/players/102">23</a><a href="/volleyball/players/102">Maique</a><a href="/volleyball/players/102">L</a>
+                ');
+            }
+
+            return Http::response('');
+        });
+
+        $log = app(VolleyballWorldScraper::class)->atualizarJogadores();
+
+        $this->assertSame('sucesso', $log->status, $log->mensagem);
+        $this->assertDatabaseHas('selecoes', ['nome' => 'Brasil', 'sigla' => 'BRA', 'genero' => 'masculino']);
+        $this->assertDatabaseHas('posicaos', ['sigla' => 'LEV']);
+        $this->assertDatabaseHas('posicaos', ['sigla' => 'PON']);
+        $this->assertDatabaseHas('posicaos', ['sigla' => 'LIB']);
+        $this->assertDatabaseHas('jogadors', ['nome' => 'Bruno Rezende', 'genero' => 'masculino']);
+        $this->assertDatabaseHas('jogadors', ['nome' => 'Lucarelli', 'genero' => 'masculino']);
+        $this->assertDatabaseHas('jogadors', ['nome' => 'Maique', 'genero' => 'masculino']);
+        $this->assertSame(3, Jogador::count());
+    }
+
+    public function test_scraper_imports_players_using_existing_volleyball_world_team_ids(): void
+    {
+        config()->set('services.volleyball_world.base_url', 'https://en.volleyballworld.com');
+
+        Selecao::create([
+            'nome' => 'Brasil',
+            'sigla' => 'BRA',
+            'genero' => 'masculino',
+            'external_ref' => '8601',
+            'ativo' => true,
+        ]);
+
+        Http::fake(function ($request) {
+            if (str_contains($request->url(), '/teams/men/8601/players/')) {
+                return Http::response('
+                    <a href="/volleyball/players/200">1</a><a href="/volleyball/players/200">Darlan</a><a href="/volleyball/players/200">O</a>
+                ');
+            }
+
+            return Http::response('', 404);
+        });
+
+        $log = app(VolleyballWorldScraper::class)->atualizarJogadores();
+
+        $this->assertSame('sucesso', $log->status, $log->mensagem);
+        $this->assertDatabaseHas('posicaos', ['sigla' => 'OPO']);
+        $this->assertDatabaseHas('jogadors', ['nome' => 'Darlan', 'genero' => 'masculino']);
     }
 
     private function standingsHtml(): string

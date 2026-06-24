@@ -16,7 +16,14 @@ class JogadorController extends Controller
      */
     public function index(): View
     {
-        $jogadores = Jogador::query()
+        $ordenarPor = request('ordenar', 'created_at');
+        $direcao = request('direcao') === 'asc' ? 'asc' : 'desc';
+
+        if (! in_array($ordenarPor, ['nome', 'selecao', 'posicao', 'valor_creditos', 'created_at'], true)) {
+            $ordenarPor = 'created_at';
+        }
+
+        $jogadoresQuery = Jogador::query()
             ->with(['selecao', 'posicao'])
             ->when(request('busca'), function ($query, $busca) {
                 $query->where('nome', 'like', "%{$busca}%");
@@ -24,13 +31,33 @@ class JogadorController extends Controller
             ->when(request('selecao_id'), function ($query, $selecaoId) {
                 $query->where('selecao_id', $selecaoId);
             })
-            ->latest()
+            ->when(request('posicao_id'), function ($query, $posicaoId) {
+                $query->where('posicao_id', $posicaoId);
+            });
+
+        match ($ordenarPor) {
+            'nome' => $jogadoresQuery->orderBy('nome', $direcao),
+            'valor_creditos' => $jogadoresQuery->orderBy('valor_creditos', $direcao),
+            'selecao' => $jogadoresQuery
+                ->join('selecoes', 'selecoes.id', '=', 'jogadors.selecao_id')
+                ->orderBy('selecoes.nome', $direcao)
+                ->select('jogadors.*'),
+            'posicao' => $jogadoresQuery
+                ->join('posicaos', 'posicaos.id', '=', 'jogadors.posicao_id')
+                ->orderBy('posicaos.nome', $direcao)
+                ->select('jogadors.*'),
+            default => $jogadoresQuery->latest(),
+        };
+
+        $jogadores = $jogadoresQuery
+            ->orderBy('jogadors.id')
             ->paginate(10)
             ->withQueryString();
 
         $selecoes = Selecao::orderBy('nome')->get(['id', 'nome']);
+        $posicoes = Posicao::orderBy('nome')->get(['id', 'nome', 'sigla']);
 
-        return view('admin.jogadores.index', compact('jogadores', 'selecoes'));
+        return view('admin.jogadores.index', compact('jogadores', 'selecoes', 'posicoes', 'ordenarPor', 'direcao'));
     }
 
     /**
