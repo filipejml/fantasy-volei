@@ -30,6 +30,7 @@ class VolleyballWorldScraperTest extends TestCase
                     'allTeams' => [
                         ['no' => 1, 'code' => 'BRA', 'name' => 'Brazil', 'translatedName' => 'Brazil', 'img' => 'https://img/bra'],
                         ['no' => 2, 'code' => 'ITA', 'name' => 'Italy', 'translatedName' => 'Italy', 'img' => 'https://img/ita'],
+                        ['no' => 3, 'code' => 'POL', 'name' => 'Poland', 'translatedName' => 'Poland', 'img' => 'https://img/pol', 'gender' => 'Men'],
                     ],
                     'matches' => [[
                         'matchNo' => 10,
@@ -57,7 +58,22 @@ class VolleyballWorldScraperTest extends TestCase
         $scraper->atualizarTudo();
 
         $this->assertDatabaseCount('partidas', 1);
-        $this->assertDatabaseCount('selecoes', 3);
+        $this->assertDatabaseCount('selecoes', 4);
+        $this->assertDatabaseHas('selecoes', [
+            'nome' => 'Polônia',
+            'sigla' => 'POL',
+            'genero' => 'masculino',
+        ]);
+        $this->assertDatabaseHas('selecoes', [
+            'nome' => 'Itália',
+            'sigla' => 'ITA',
+            'genero' => 'masculino',
+        ]);
+        $this->assertDatabaseHas('selecoes', [
+            'nome' => 'Brasil',
+            'sigla' => 'BRA',
+            'genero' => 'masculino',
+        ]);
         $this->assertSame(1, Partida::first()->placar_fora);
         $this->assertGreaterThanOrEqual(1, Classificacao::count());
         $this->assertDatabaseHas('scraping_logs', ['status' => 'sucesso']);

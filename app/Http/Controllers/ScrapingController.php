@@ -25,4 +25,14 @@ class ScrapingController extends Controller
             $log->mensagem
         );
     }
+
+    public function atualizarJogadores(VolleyballWorldScraper $scraper): RedirectResponse
+    {
+        $log = $scraper->atualizarJogadores();
+
+        return back()->with(
+            $log->status === 'erro' ? 'error' : 'success',
+            $log->mensagem
+        );
+    }
 }

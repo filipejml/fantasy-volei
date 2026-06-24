@@ -30,6 +30,11 @@ class AdminCrudTest extends TestCase
     {
         $admin = User::factory()->create(['role' => 0]);
 
+        $this->actingAs($admin)
+            ->get(route('admin.selecoes.index'))
+            ->assertOk()
+            ->assertSee('Atualizar da Volleyball World');
+
         $response = $this->actingAs($admin)->post(route('admin.selecoes.store'), [
             'nome' => 'Brasil',
             'genero' => 'masculino',
@@ -57,6 +62,23 @@ class AdminCrudTest extends TestCase
             ->assertRedirect(route('admin.selecoes.index'));
 
         $this->assertDatabaseMissing('selecoes', ['id' => $selecao->id]);
+    }
+
+    public function test_admin_can_filter_selecoes_by_name_and_gender(): void
+    {
+        $admin = User::factory()->create(['role' => 0]);
+
+        Selecao::create(['nome' => 'Brasil', 'sigla' => 'BRA', 'genero' => 'masculino', 'ativo' => true]);
+        Selecao::create(['nome' => 'Brasil Feminino', 'sigla' => 'BRF', 'genero' => 'feminino', 'ativo' => true]);
+        Selecao::create(['nome' => 'Itália', 'sigla' => 'ITA', 'genero' => 'masculino', 'ativo' => true]);
+
+        $this->actingAs($admin)
+            ->get(route('admin.selecoes.index', ['selecao' => 'Bra', 'genero' => 'feminino']))
+            ->assertOk()
+            ->assertSee('Brasil Feminino')
+            ->assertSee('value="Bra"', false)
+            ->assertDontSee('Itália')
+            ->assertDontSee('>Brasil</div>', false);
     }
 
     public function test_admin_can_manage_jogadores(): void

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\SelecaoRequest;
 use App\Models\Selecao;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class SelecaoController extends Controller
@@ -12,14 +13,26 @@ class SelecaoController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index(): View
+    public function index(Request $request): View
     {
+        $filtros = $request->only(['selecao', 'genero']);
+
         $selecoes = Selecao::query()
             ->withCount('jogadores')
+            ->when($filtros['selecao'] ?? null, function ($query, string $selecao) {
+                $query->where(function ($query) use ($selecao) {
+                    $query->where('nome', 'like', "%{$selecao}%")
+                        ->orWhere('sigla', 'like', "%{$selecao}%");
+                });
+            })
+            ->when(in_array($filtros['genero'] ?? null, ['masculino', 'feminino'], true), function ($query) use ($filtros) {
+                $query->where('genero', $filtros['genero']);
+            })
             ->latest()
-            ->paginate(10);
+            ->paginate(10)
+            ->withQueryString();
 
-        return view('admin.selecoes.index', compact('selecoes'));
+        return view('admin.selecoes.index', compact('selecoes', 'filtros'));
     }
 
     /**
