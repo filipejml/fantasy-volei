@@ -43,9 +43,7 @@ class VnlPageTest extends TestCase
             'sets_contra' => 1,
         ]);
 
-        $user = User::factory()->create();
-
-        $this->actingAs($user)
+        $this->actingAs(User::factory()->create())
             ->get(route('vnl.index'))
             ->assertOk()
             ->assertSee('Brasil')
@@ -55,13 +53,40 @@ class VnlPageTest extends TestCase
 
     public function test_vnl_page_works_without_scraped_data(): void
     {
-        $user = User::factory()->create();
-
-        $this->actingAs($user)
+        $this->actingAs(User::factory()->create())
             ->get(route('vnl.index'))
             ->assertOk()
             ->assertSee('Nenhuma partida cadastrada')
             ->assertSee('Classificação ainda não cadastrada');
+    }
+
+    public function test_vnl_page_shows_live_set_points(): void
+    {
+        $brasil = Selecao::create(['nome' => 'Brasil', 'sigla' => 'BRA', 'genero' => 'masculino', 'ativo' => true]);
+        $italia = Selecao::create(['nome' => 'Itália', 'sigla' => 'ITA', 'genero' => 'masculino', 'ativo' => true]);
+
+        Partida::create([
+            'genero' => 'masculino',
+            'temporada' => 2026,
+            'selecao_casa_id' => $brasil->id,
+            'selecao_fora_id' => $italia->id,
+            'data_partida' => '2026-06-24 10:00:00',
+            'placar_casa' => 1,
+            'placar_fora' => 0,
+            'sets' => [
+                ['pointsTeamA' => 25, 'pointsTeamB' => 20],
+                ['pointsTeamA' => 12, 'pointsTeamB' => 9],
+            ],
+            'status' => 'ao_vivo',
+            'origem' => 'manual',
+        ]);
+
+        $this->actingAs(User::factory()->create())
+            ->get(route('vnl.index'))
+            ->assertOk()
+            ->assertSee('Ao Vivo')
+            ->assertSee('Set atual: 12 x 9')
+            ->assertSee('window.location.reload');
     }
 
     public function test_vnl_page_requires_authentication(): void

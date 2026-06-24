@@ -129,8 +129,8 @@ class VolleyballWorldScraper
                         'selecao_casa_id' => $selecaoCasa->id,
                         'selecao_fora_id' => $selecaoFora->id,
                         'data_partida' => Carbon::parse($jogo['matchDateUtc']),
-                        'placar_casa' => $jogo['teamAScore'] ?? null,
-                        'placar_fora' => $jogo['teamBScore'] ?? null,
+                        'placar_casa' => $this->normalizarPlacar($jogo['teamAScore'] ?? null),
+                        'placar_fora' => $this->normalizarPlacar($jogo['teamBScore'] ?? null),
                         'sets' => collect($jogo['sets'] ?? [])
                             ->filter(fn ($set) => ($set['pointsTeamA'] ?? 0) > 0 || ($set['pointsTeamB'] ?? 0) > 0)
                             ->values()
@@ -275,6 +275,17 @@ class VolleyballWorldScraper
         }
 
         return 'agendado';
+    }
+
+    private function normalizarPlacar(mixed $placar): ?int
+    {
+        if (! is_numeric($placar)) {
+            return null;
+        }
+
+        $placar = (int) $placar;
+
+        return $placar >= 0 ? $placar : null;
     }
 
     private function get(string $url)

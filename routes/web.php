@@ -9,12 +9,23 @@ use App\Http\Controllers\ScrapingController;
 use App\Http\Controllers\SelecaoController;
 use App\Http\Controllers\TimeController;
 use App\Http\Controllers\VnlController;
+use App\Models\Partida;
 use Illuminate\Support\Facades\Route;
 
 Route::redirect('/', '/login');
 
 Route::get('/dashboard', function () {
-    return view('dashboard');
+    $inicioDoDia = now()->startOfDay();
+    $fimDoDia = now()->endOfDay();
+
+    $jogosHoje = Partida::with(['selecaoCasa', 'selecaoFora'])
+        ->whereBetween('data_partida', [$inicioDoDia, $fimDoDia])
+        ->orderBy('data_partida')
+        ->get();
+
+    return view('dashboard', [
+        'jogosHoje' => $jogosHoje,
+    ]);
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {

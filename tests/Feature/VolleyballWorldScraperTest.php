@@ -64,6 +64,51 @@ class VolleyballWorldScraperTest extends TestCase
         $this->assertSame(2, ScrapingLog::count());
     }
 
+    public function test_scraper_ignores_negative_placeholder_scores(): void
+    {
+        config()->set('services.volleyball_world', [
+            'base_url' => 'https://en.volleyballworld.com',
+            'season' => 2026,
+            'tournaments' => '1661;1662',
+            'schedule_from' => '2026-06-01',
+            'schedule_to' => '2026-08-15',
+        ]);
+
+        Http::fake(function ($request) {
+            if (str_contains($request->url(), '/api/v1/volley-tournament/')) {
+                return Http::response([
+                    'allTeams' => [
+                        ['no' => 1, 'code' => 'CHN', 'name' => 'China', 'translatedName' => 'China', 'img' => 'https://img/chn'],
+                        ['no' => 2, 'code' => 'TUR', 'name' => 'Turkey', 'translatedName' => 'Turkey', 'img' => 'https://img/tur'],
+                    ],
+                    'matches' => [[
+                        'matchNo' => 11,
+                        'matchDateUtc' => '2026-06-24T11:00:00Z',
+                        'gender' => 'Men',
+                        'teamANo' => 1,
+                        'teamBNo' => 2,
+                        'teamAScore' => -2147483648,
+                        'teamBScore' => -2147483648,
+                        'matchStatus' => 0,
+                        'sets' => [],
+                        'roundName' => 'Week 2',
+                        'city' => 'Glywice',
+                        'country' => 'Poland',
+                    ]],
+                ]);
+            }
+
+            return Http::response($this->standingsHtml());
+        });
+
+        app(VolleyballWorldScraper::class)->atualizarTudo();
+
+        $partida = Partida::first();
+
+        $this->assertNull($partida->placar_casa);
+        $this->assertNull($partida->placar_fora);
+    }
+
     private function standingsHtml(): string
     {
         return <<<'HTML'
