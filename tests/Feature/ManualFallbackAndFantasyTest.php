@@ -64,4 +64,50 @@ class ManualFallbackAndFantasyTest extends TestCase
         $this->assertSame(5, $time->jogadores()->count());
         $this->assertSame('50.00', $time->creditos_usados);
     }
+
+    public function test_user_can_render_and_save_my_team_page(): void
+    {
+        $user = User::factory()->create();
+        $selecao = Selecao::create(['nome' => 'Brasil', 'genero' => 'masculino', 'ativo' => true]);
+        $posicao = Posicao::create(['nome' => 'Ponteiro', 'sigla' => 'PON']);
+
+        $jogadores = collect(range(1, 3))->map(fn ($i) => Jogador::create([
+            'selecao_id' => $selecao->id,
+            'posicao_id' => $posicao->id,
+            'nome' => "Atleta {$i}",
+            'genero' => 'masculino',
+            'valor_creditos' => 10,
+            'media_pontos' => 5,
+            'ativo' => true,
+        ]));
+
+        $this->actingAs($user)
+            ->get(route('times.create', ['genero' => 'masculino']))
+            ->assertOk()
+            ->assertSee('Montar time fantasy')
+            ->assertSee('Atleta 1')
+            ->assertSee('Escolha até 7 jogadores');
+
+        $this->actingAs($user)
+            ->post(route('times.store'), [
+                'nome' => 'Meu Brasil',
+                'genero' => 'masculino',
+                'creditos_limite' => 100,
+                'jogadores' => $jogadores->pluck('id')->all(),
+            ])
+            ->assertRedirect();
+
+        $time = $user->times()->with('jogadores')->firstOrFail();
+
+        $this->assertSame('Meu Brasil', $time->nome);
+        $this->assertSame(3, $time->jogadores->count());
+        $this->assertSame('30.00', $time->creditos_usados);
+
+        $this->actingAs($user)
+            ->get(route('times.index'))
+            ->assertOk()
+            ->assertSee('Meu Brasil')
+            ->assertSee('Atleta 1')
+            ->assertSee('C$ 30');
+    }
 }

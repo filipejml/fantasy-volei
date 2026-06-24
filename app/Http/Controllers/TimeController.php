@@ -18,17 +18,31 @@ class TimeController extends Controller
     public function index(Request $request): View
     {
         return view('times.index', [
-            'times' => $request->user()->times()->with('jogadores.posicao')->get(),
+            'times' => $request->user()->times()
+                ->with(['jogadores.selecao', 'jogadores.posicao'])
+                ->latest()
+                ->get(),
         ]);
     }
 
     /**
      * Show the form for creating a new resource.
      */
-    public function create(): View
+    public function create(Request $request): View
     {
+        $genero = in_array($request->query('genero'), ['masculino', 'feminino'], true)
+            ? $request->query('genero')
+            : 'masculino';
+
         return view('times.create', [
-            'jogadores' => Jogador::with(['selecao', 'posicao'])->where('ativo', true)->orderByDesc('media_pontos')->get(),
+            'genero' => $genero,
+            'jogadores' => Jogador::with(['selecao', 'posicao'])
+                ->where('ativo', true)
+                ->where('genero', $genero)
+                ->orderBy('posicao_id')
+                ->orderByDesc('media_pontos')
+                ->orderBy('nome')
+                ->get(),
         ]);
     }
 
@@ -65,7 +79,9 @@ class TimeController extends Controller
             'jogadores' => Jogador::with(['selecao', 'posicao'])
                 ->where('ativo', true)
                 ->where('genero', $time->genero)
+                ->orderBy('posicao_id')
                 ->orderByDesc('media_pontos')
+                ->orderBy('nome')
                 ->get(),
         ]);
     }
