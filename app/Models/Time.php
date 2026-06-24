@@ -33,6 +33,8 @@ class Time extends Model
 
     public function jogadores(): BelongsToMany
     {
-        return $this->belongsToMany(Jogador::class, 'time_jogadors')->withTimestamps();
+        return $this->belongsToMany(Jogador::class, 'time_jogadors')
+            ->withPivot(['tipo', 'slot'])
+            ->withTimestamps();
     }
 }
