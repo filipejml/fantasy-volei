@@ -17,9 +17,19 @@
                         <p class="text-xs font-bold uppercase tracking-[0.2em] text-blue-700">VNL</p>
                         <h1 class="mt-1 text-2xl font-extrabold text-slate-900">Jogos de hoje</h1>
                     </div>
-                    <a href="{{ route('vnl.index') }}" class="inline-flex items-center justify-center rounded-lg bg-blue-700 px-4 py-2 text-sm font-bold text-white transition hover:bg-blue-800">
-                        Ver VNL
-                    </a>
+                    <div class="flex flex-col gap-2 sm:flex-row sm:items-center">
+                        @if(Auth::user()->isAdmin())
+                            <form method="POST" action="{{ route('admin.scraping.atualizar') }}">
+                                @csrf
+                                <button type="submit" class="inline-flex w-full items-center justify-center rounded-lg border border-blue-200 bg-white px-4 py-2 text-sm font-bold text-blue-700 transition hover:bg-blue-50 sm:w-auto">
+                                    Atualizar placares
+                                </button>
+                            </form>
+                        @endif
+                        <a href="{{ route('vnl.index') }}" class="inline-flex items-center justify-center rounded-lg bg-blue-700 px-4 py-2 text-sm font-bold text-white transition hover:bg-blue-800">
+                            Ver VNL
+                        </a>
+                    </div>
                 </div>
 
                 <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">

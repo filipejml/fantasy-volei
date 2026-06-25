@@ -58,20 +58,26 @@ class TimeRequest extends FormRequest
             }
 
             if ($ids->unique()->count() !== $ids->count()) {
-                $validator->errors()->add('jogadores', 'Um jogador não pode aparecer mais de uma vez no mesmo time.');
+                $validator->errors()->add('jogadores', 'Um jogador nao pode aparecer mais de uma vez no mesmo time.');
             }
 
-            $jogadores = Jogador::with('posicao')->whereIn('id', $ids)->get()->keyBy('id');
+            $jogadores = Jogador::with(['posicao', 'selecao'])->whereIn('id', $ids)->get()->keyBy('id');
 
             if ($jogadores->count() !== $ids->unique()->count()) {
-                $validator->errors()->add('jogadores', 'Há jogadores inválidos na escalação.');
+                $validator->errors()->add('jogadores', 'Ha jogadores invalidos na escalacao.');
 
                 return;
             }
 
             foreach ($jogadores as $jogador) {
                 if ($jogador->genero !== $this->input('genero')) {
-                    $validator->errors()->add('genero', 'Todos os jogadores devem ser do mesmo gênero do time.');
+                    $validator->errors()->add('genero', 'Todos os jogadores devem ser do mesmo genero do time.');
+
+                    break;
+                }
+
+                if (! $jogador->ativo || ! $jogador->selecao?->ativo) {
+                    $validator->errors()->add('jogadores', 'A escalacao deve conter apenas jogadores ativos de selecoes ativas.');
 
                     break;
                 }
@@ -83,7 +89,7 @@ class TimeRequest extends FormRequest
 
                     foreach ($idsDaPosicao as $id) {
                         if (($jogadores[$id]?->posicao?->sigla) !== $sigla) {
-                            $validator->errors()->add("{$tipo}.{$sigla}", "A posição {$sigla} deve receber apenas jogadores dessa posição.");
+                            $validator->errors()->add("{$tipo}.{$sigla}", "A posicao {$sigla} deve receber apenas jogadores dessa posicao.");
 
                             break 2;
                         }

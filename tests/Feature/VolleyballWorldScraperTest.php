@@ -195,6 +195,45 @@ class VolleyballWorldScraperTest extends TestCase
         $this->assertDatabaseHas('jogadors', ['nome' => 'Darlan', 'genero' => 'masculino']);
     }
 
+    public function test_scraper_does_not_reactivate_disabled_selection_or_players(): void
+    {
+        config()->set('services.volleyball_world.base_url', 'https://en.volleyballworld.com');
+
+        $selecao = Selecao::create([
+            'nome' => 'Brasil',
+            'sigla' => 'BRA',
+            'genero' => 'masculino',
+            'external_ref' => '8601',
+            'ativo' => false,
+        ]);
+        $posicao = \App\Models\Posicao::create(['nome' => 'Oposto', 'sigla' => 'O']);
+
+        Jogador::create([
+            'selecao_id' => $selecao->id,
+            'posicao_id' => $posicao->id,
+            'nome' => 'Darlan',
+            'genero' => 'masculino',
+            'valor_creditos' => 10,
+            'media_pontos' => 0,
+            'ativo' => false,
+        ]);
+
+        Http::fake(function ($request) {
+            if (str_contains($request->url(), '/teams/men/8601/players/')) {
+                return Http::response('
+                    <a href="/volleyball/players/200">1</a><a href="/volleyball/players/200">Darlan</a><a href="/volleyball/players/200">O</a>
+                ');
+            }
+
+            return Http::response('', 404);
+        });
+
+        app(VolleyballWorldScraper::class)->atualizarJogadores();
+
+        $this->assertDatabaseHas('selecoes', ['id' => $selecao->id, 'ativo' => false]);
+        $this->assertDatabaseHas('jogadors', ['nome' => 'Darlan', 'ativo' => false]);
+    }
+
     private function standingsHtml(): string
     {
         return <<<'HTML'

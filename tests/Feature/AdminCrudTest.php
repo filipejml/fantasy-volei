@@ -81,6 +81,34 @@ class AdminCrudTest extends TestCase
             ->assertDontSee('>Brasil</div>', false);
     }
 
+    public function test_admin_can_deactivate_selection_and_its_players_are_deactivated(): void
+    {
+        $admin = User::factory()->create(['role' => 0]);
+        $selecao = Selecao::create(['nome' => 'Brasil', 'sigla' => 'BRA', 'genero' => 'masculino', 'ativo' => true]);
+        $posicao = Posicao::create(['nome' => 'Ponteiro', 'sigla' => 'OH']);
+        $jogador = Jogador::create([
+            'selecao_id' => $selecao->id,
+            'posicao_id' => $posicao->id,
+            'nome' => 'Lucarelli',
+            'genero' => 'masculino',
+            'valor_creditos' => 10,
+            'media_pontos' => 0,
+            'ativo' => true,
+        ]);
+
+        $this->actingAs($admin)
+            ->patch(route('admin.selecoes.status', $selecao), ['ativo' => 0])
+            ->assertRedirect();
+
+        $this->assertDatabaseHas('selecoes', ['id' => $selecao->id, 'ativo' => false]);
+        $this->assertDatabaseHas('jogadors', ['id' => $jogador->id, 'ativo' => false]);
+
+        $this->actingAs(User::factory()->create())
+            ->get(route('times.create', ['genero' => 'masculino']))
+            ->assertOk()
+            ->assertDontSee('Lucarelli');
+    }
+
     public function test_admin_can_manage_jogadores(): void
     {
         $admin = User::factory()->create(['role' => 0]);

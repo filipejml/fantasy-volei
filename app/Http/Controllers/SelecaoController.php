@@ -6,13 +6,11 @@ use App\Http\Requests\SelecaoRequest;
 use App\Models\Selecao;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
 class SelecaoController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index(Request $request): View
     {
         $filtros = $request->only(['selecao', 'genero']);
@@ -35,29 +33,21 @@ class SelecaoController extends Controller
         return view('admin.selecoes.index', compact('selecoes', 'filtros'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create(): View
     {
         return view('admin.selecoes.create');
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(SelecaoRequest $request): RedirectResponse
     {
         $selecao = Selecao::create($request->validated());
+        $this->desativarJogadoresSeNecessario($selecao);
 
         return redirect()
             ->route('admin.selecoes.show', $selecao)
-            ->with('success', 'Seleção cadastrada com sucesso.');
+            ->with('success', 'Selecao cadastrada com sucesso.');
     }
 
-    /**
-     * Display the specified resource.
-     */
     public function show(Selecao $selecao): View
     {
         $selecao->load(['jogadores.posicao']);
@@ -65,35 +55,57 @@ class SelecaoController extends Controller
         return view('admin.selecoes.show', compact('selecao'));
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
     public function edit(Selecao $selecao): View
     {
         return view('admin.selecoes.edit', compact('selecao'));
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(SelecaoRequest $request, Selecao $selecao): RedirectResponse
     {
-        $selecao->update($request->validated());
+        DB::transaction(function () use ($request, $selecao): void {
+            $selecao->update($request->validated());
+            $this->desativarJogadoresSeNecessario($selecao);
+        });
 
         return redirect()
             ->route('admin.selecoes.show', $selecao)
-            ->with('success', 'Seleção atualizada com sucesso.');
+            ->with('success', 'Selecao atualizada com sucesso.');
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
+    public function status(Request $request, Selecao $selecao): RedirectResponse
+    {
+        $request->validate([
+            'ativo' => ['required', 'boolean'],
+        ]);
+
+        DB::transaction(function () use ($request, $selecao): void {
+            $selecao->update(['ativo' => $request->boolean('ativo')]);
+            $this->desativarJogadoresSeNecessario($selecao);
+        });
+
+        return back()->with(
+            'success',
+            $selecao->ativo
+                ? 'Selecao ativada.'
+                : 'Selecao desativada. Seus jogadores tambem foram desativados.'
+        );
+    }
+
     public function destroy(Selecao $selecao): RedirectResponse
     {
         $selecao->delete();
 
         return redirect()
             ->route('admin.selecoes.index')
-            ->with('success', 'Seleção excluída com sucesso.');
+            ->with('success', 'Selecao excluida com sucesso.');
+    }
+
+    private function desativarJogadoresSeNecessario(Selecao $selecao): void
+    {
+        if ($selecao->ativo) {
+            return;
+        }
+
+        $selecao->jogadores()->update(['ativo' => false]);
     }
 }

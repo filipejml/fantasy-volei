@@ -50,6 +50,23 @@
         <x-input-label for="placar_fora" value="Sets do visitante" />
         <x-text-input id="placar_fora" name="placar_fora" type="number" min="0" max="5" class="mt-2 w-full" :value="old('placar_fora', $partida?->placar_fora)" />
     </div>
+    @if($partida?->exists)
+        <div class="md:col-span-2 rounded-xl bg-blue-50 p-4 ring-1 ring-blue-100">
+            <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                    <p class="text-sm font-bold text-blue-900">Atualizar placar pela Volleyball World</p>
+                    <p class="mt-1 text-xs text-blue-800">Busca o placar atual do jogo e atualiza sets, status e parciais salvas.</p>
+                </div>
+                <button
+                    type="submit"
+                    form="atualizar-placar-{{ $partida->id }}"
+                    class="rounded-lg bg-blue-700 px-4 py-2.5 text-sm font-bold text-white hover:bg-blue-800"
+                >
+                    Atualizar placar
+                </button>
+            </div>
+        </div>
+    @endif
     @foreach (['fase' => 'Fase', 'rodada' => 'Rodada', 'local' => 'Local'] as $campo => $label)
         <div>
             <x-input-label :for="$campo" :value="$label" />

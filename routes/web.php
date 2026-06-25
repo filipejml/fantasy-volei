@@ -42,6 +42,7 @@ Route::middleware(['auth', 'admin'])
     ->prefix('admin')
     ->name('admin.')
     ->group(function () {
+        Route::patch('selecoes/{selecao}/status', [SelecaoController::class, 'status'])->name('selecoes.status');
         Route::resource('selecoes', SelecaoController::class)
             ->parameters(['selecoes' => 'selecao']);
         Route::resource('jogadores', JogadorController::class)
@@ -49,6 +50,7 @@ Route::middleware(['auth', 'admin'])
         Route::post('jogadores/atualizar-vw', [ScrapingController::class, 'atualizarJogadores'])->name('jogadores.atualizar-vw');
         Route::resource('posicoes', PosicaoController::class)
             ->parameters(['posicoes' => 'posicao']);
+        Route::patch('partidas/{partida}/atualizar-placar', [PartidaController::class, 'atualizarPlacar'])->name('partidas.atualizar-placar');
         Route::resource('partidas', PartidaController::class)
             ->parameters(['partidas' => 'partida']);
         Route::resource('classificacoes', ClassificacaoController::class)

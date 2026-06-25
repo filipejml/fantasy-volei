@@ -7,6 +7,7 @@ use App\Models\Posicao;
 use App\Models\Selecao;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
 
 class ManualFallbackAndFantasyTest extends TestCase
@@ -34,6 +35,80 @@ class ManualFallbackAndFantasyTest extends TestCase
             'selecao_casa_id' => $casa->id,
             'origem' => 'manual',
         ]);
+    }
+
+    public function test_admin_can_update_match_score_from_volleyball_world(): void
+    {
+        config()->set('services.volleyball_world', [
+            'base_url' => 'https://en.volleyballworld.com',
+            'season' => 2026,
+            'tournaments' => '1661;1662',
+            'schedule_from' => '2026-06-01',
+            'schedule_to' => '2026-08-15',
+        ]);
+
+        $admin = User::factory()->create(['role' => 0]);
+        $casa = Selecao::create([
+            'nome' => 'Brasil',
+            'sigla' => 'BRA',
+            'genero' => 'masculino',
+            'external_ref' => '1',
+            'ativo' => true,
+        ]);
+        $fora = Selecao::create([
+            'nome' => 'Italia',
+            'sigla' => 'ITA',
+            'genero' => 'masculino',
+            'external_ref' => '2',
+            'ativo' => true,
+        ]);
+        $partida = \App\Models\Partida::create([
+            'genero' => 'masculino',
+            'temporada' => 2026,
+            'selecao_casa_id' => $casa->id,
+            'selecao_fora_id' => $fora->id,
+            'data_partida' => '2026-06-25 15:00:00',
+            'status' => 'agendado',
+            'external_hash' => 'vw-vnl-2026-99',
+            'origem' => 'scraping',
+        ]);
+
+        Http::fake([
+            'https://en.volleyballworld.com/api/v1/volley-tournament/*' => Http::response([
+                'allTeams' => [
+                    ['no' => 1, 'code' => 'BRA', 'name' => 'Brazil', 'translatedName' => 'Brazil'],
+                    ['no' => 2, 'code' => 'ITA', 'name' => 'Italy', 'translatedName' => 'Italy'],
+                ],
+                'matches' => [[
+                    'matchNo' => 99,
+                    'matchDateUtc' => '2026-06-25T15:00:00Z',
+                    'gender' => 'Men',
+                    'teamANo' => 1,
+                    'teamBNo' => 2,
+                    'teamAScore' => 2,
+                    'teamBScore' => 1,
+                    'matchStatus' => 1,
+                    'sets' => [
+                        ['pointsTeamA' => 25, 'pointsTeamB' => 20],
+                        ['pointsTeamA' => 20, 'pointsTeamB' => 25],
+                        ['pointsTeamA' => 12, 'pointsTeamB' => 10],
+                    ],
+                    'roundName' => 'Week 2',
+                    'matchCenterUrl' => '/match/99',
+                ]],
+            ]),
+        ]);
+
+        $this->actingAs($admin)
+            ->patch(route('admin.partidas.atualizar-placar', $partida))
+            ->assertRedirect();
+
+        $partida->refresh();
+
+        $this->assertSame('ao_vivo', $partida->status);
+        $this->assertSame(2, $partida->placar_casa);
+        $this->assertSame(1, $partida->placar_fora);
+        $this->assertSame(3, count($partida->sets));
     }
 
     public function test_user_can_render_and_save_my_team_page(): void

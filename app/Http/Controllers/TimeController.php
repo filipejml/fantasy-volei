@@ -31,6 +31,7 @@ class TimeController extends Controller
             'genero' => $genero,
             'jogadores' => Jogador::with(['selecao', 'posicao'])
                 ->where('ativo', true)
+                ->whereHas('selecao', fn ($query) => $query->where('ativo', true))
                 ->where('genero', $genero)
                 ->orderBy('posicao_id')
                 ->orderByDesc('media_pontos')
@@ -62,6 +63,7 @@ class TimeController extends Controller
             'time' => $time->load('jogadores'),
             'jogadores' => Jogador::with(['selecao', 'posicao'])
                 ->where('ativo', true)
+                ->whereHas('selecao', fn ($query) => $query->where('ativo', true))
                 ->where('genero', $time->genero)
                 ->orderBy('posicao_id')
                 ->orderByDesc('media_pontos')

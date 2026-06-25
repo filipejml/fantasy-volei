@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\PartidaRequest;
 use App\Models\Partida;
 use App\Models\Selecao;
+use App\Services\VolleyballWorldScraper;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 
@@ -73,6 +74,17 @@ class PartidaController extends Controller
         ]);
 
         return back()->with('success', 'Partida atualizada manualmente.');
+    }
+
+    public function atualizarPlacar(Partida $partida, VolleyballWorldScraper $scraper): RedirectResponse
+    {
+        try {
+            $scraper->atualizarPartida($partida);
+        } catch (\Throwable $exception) {
+            return back()->with('error', 'Não foi possível atualizar o placar: '.$exception->getMessage());
+        }
+
+        return back()->with('success', 'Placar atualizado pela Volleyball World.');
     }
 
     /**

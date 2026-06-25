@@ -75,14 +75,7 @@ class VolleyballWorldScraper
 
     public function importarPartidas(): array
     {
-        $url = sprintf(
-            '%s/api/v1/volley-tournament/%s/%s/%s',
-            $this->baseUrl(),
-            config('services.volleyball_world.schedule_from'),
-            config('services.volleyball_world.schedule_to'),
-            config('services.volleyball_world.tournaments')
-        );
-
+        $url = $this->scheduleUrl();
         $payload = $this->get($url)->json();
 
         if (! is_array($payload) || ! isset($payload['matches'], $payload['allTeams'])) {
@@ -163,6 +156,50 @@ class VolleyballWorldScraper
         ];
     }
 
+    public function atualizarPartida(Partida $partida): Partida
+    {
+        $this->importarPartidas();
+        $partida->refresh();
+
+        if ($partida->external_hash) {
+            return $partida;
+        }
+
+        $importada = Partida::query()
+            ->where('id', '!=', $partida->id)
+            ->where('origem', 'scraping')
+            ->where('genero', $partida->genero)
+            ->where('temporada', $partida->temporada)
+            ->where('selecao_casa_id', $partida->selecao_casa_id)
+            ->where('selecao_fora_id', $partida->selecao_fora_id)
+            ->whereBetween('data_partida', [
+                $partida->data_partida->copy()->subMinutes(10),
+                $partida->data_partida->copy()->addMinutes(10),
+            ])
+            ->latest('importado_em')
+            ->first();
+
+        if (! $importada) {
+            return $partida;
+        }
+
+        $dadosImportados = [
+            'placar_casa' => $importada->placar_casa,
+            'placar_fora' => $importada->placar_fora,
+            'sets' => $importada->sets,
+            'status' => $importada->status,
+            'external_hash' => $importada->external_hash,
+            'source_url' => $importada->source_url,
+            'origem' => 'scraping',
+            'importado_em' => now(),
+        ];
+
+        $importada->delete();
+        $partida->update($dadosImportados);
+
+        return $partida->fresh();
+    }
+
     private function generosPorTime(array $payload): array
     {
         $generos = [];
@@ -208,7 +245,7 @@ class VolleyballWorldScraper
 
         DB::transaction(function () use ($linhas, $genero, $url) {
             foreach ($linhas as $linha) {
-                $selecao = Selecao::updateOrCreate(
+                $selecao = $this->salvarSelecaoPreservandoStatus(
                     [
                         'sigla' => $linha['sigla'],
                         'genero' => $genero,
@@ -217,7 +254,6 @@ class VolleyballWorldScraper
                         'nome' => $this->nomeSelecaoPtBr($linha['nome'], $linha['sigla']),
                         'bandeira' => $linha['bandeira'],
                         'source_url' => $url,
-                        'ativo' => true,
                     ]
                 );
 
@@ -313,14 +349,13 @@ class VolleyballWorldScraper
                 $dadosSelecao = [
                     'nome' => $this->nomeSelecaoPtBr($time['nome'], $time['sigla']),
                     'source_url' => $time['url'],
-                    'ativo' => true,
                 ];
 
                 if (isset($time['external_ref'])) {
                     $dadosSelecao['external_ref'] = $time['external_ref'];
                 }
 
-                $selecao = Selecao::updateOrCreate(
+                $selecao = $this->salvarSelecaoPreservandoStatus(
                     [
                         'sigla' => $time['sigla'],
                         'genero' => $genero,
@@ -352,7 +387,7 @@ class VolleyballWorldScraper
                             'genero' => $genero,
                             'valor_creditos' => 10,
                             'media_pontos' => 0,
-                            'ativo' => true,
+                            'ativo' => $selecao->ativo,
                         ]
                     );
 
@@ -518,7 +553,7 @@ class VolleyballWorldScraper
 
     private function salvarSelecao(array $time, string $genero, string $sourceUrl): Selecao
     {
-        return Selecao::updateOrCreate(
+        return $this->salvarSelecaoPreservandoStatus(
             [
                 'external_ref' => (string) $time['no'],
                 'genero' => $genero,
@@ -528,9 +563,25 @@ class VolleyballWorldScraper
                 'sigla' => ($time['code'] ?? null) ?: null,
                 'bandeira' => $time['img'] ?? null,
                 'source_url' => $sourceUrl,
-                'ativo' => true,
             ]
         );
+    }
+
+    private function salvarSelecaoPreservandoStatus(array $atributos, array $dados): Selecao
+    {
+        $selecao = Selecao::where($atributos)->first();
+
+        if ($selecao) {
+            $selecao->update($dados);
+
+            return $selecao->fresh();
+        }
+
+        return Selecao::create([
+            ...$atributos,
+            ...$dados,
+            'ativo' => true,
+        ]);
     }
 
     private function nomeSelecaoPtBr(string $nome, mixed $sigla = null): string
@@ -691,6 +742,17 @@ class VolleyballWorldScraper
     private function baseUrl(): string
     {
         return rtrim(config('services.volleyball_world.base_url'), '/');
+    }
+
+    private function scheduleUrl(): string
+    {
+        return sprintf(
+            '%s/api/v1/volley-tournament/%s/%s/%s',
+            $this->baseUrl(),
+            config('services.volleyball_world.schedule_from'),
+            config('services.volleyball_world.schedule_to'),
+            config('services.volleyball_world.tournaments')
+        );
     }
 
     private function absoluteUrl(string $url): string
