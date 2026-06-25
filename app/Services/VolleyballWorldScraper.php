@@ -609,20 +609,20 @@ class VolleyballWorldScraper
     private function posicaoPorCodigo(string $codigo): Posicao
     {
         $mapa = [
-            'S' => ['sigla' => 'LEV', 'nome' => 'Levantador'],
-            'SETTER' => ['sigla' => 'LEV', 'nome' => 'Levantador'],
-            'O' => ['sigla' => 'OPO', 'nome' => 'Oposto'],
-            'OP' => ['sigla' => 'OPO', 'nome' => 'Oposto'],
-            'OPPOSITE' => ['sigla' => 'OPO', 'nome' => 'Oposto'],
-            'OH' => ['sigla' => 'PON', 'nome' => 'Ponteiro'],
-            'OUTSIDE HITTER' => ['sigla' => 'PON', 'nome' => 'Ponteiro'],
-            'MB' => ['sigla' => 'CEN', 'nome' => 'Central'],
-            'MIDDLE BLOCKER' => ['sigla' => 'CEN', 'nome' => 'Central'],
-            'L' => ['sigla' => 'LIB', 'nome' => 'Líbero'],
-            'LIBERO' => ['sigla' => 'LIB', 'nome' => 'Líbero'],
+            'S' => ['sigla' => 'S', 'nome' => 'Levantador'],
+            'SETTER' => ['sigla' => 'S', 'nome' => 'Levantador'],
+            'O' => ['sigla' => 'O', 'nome' => 'Oposto'],
+            'OP' => ['sigla' => 'O', 'nome' => 'Oposto'],
+            'OPPOSITE' => ['sigla' => 'O', 'nome' => 'Oposto'],
+            'OH' => ['sigla' => 'OH', 'nome' => 'Ponteiro'],
+            'OUTSIDE HITTER' => ['sigla' => 'OH', 'nome' => 'Ponteiro'],
+            'MB' => ['sigla' => 'MB', 'nome' => 'Central'],
+            'MIDDLE BLOCKER' => ['sigla' => 'MB', 'nome' => 'Central'],
+            'L' => ['sigla' => 'L', 'nome' => 'Líbero'],
+            'LIBERO' => ['sigla' => 'L', 'nome' => 'Líbero'],
         ];
 
-        $posicao = $mapa[strtoupper($codigo)] ?? ['sigla' => 'PON', 'nome' => 'Ponteiro'];
+        $posicao = $mapa[strtoupper($codigo)] ?? ['sigla' => 'OH', 'nome' => 'Ponteiro'];
 
         return Posicao::firstOrCreate(['sigla' => $posicao['sigla']], ['nome' => $posicao['nome']]);
     }

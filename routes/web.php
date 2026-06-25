@@ -30,7 +30,6 @@ Route::get('/dashboard', function () {
 
 Route::middleware('auth')->group(function () {
     Route::get('/vnl', [VnlController::class, 'index'])->name('vnl.index');
-    Route::post('/meus-times/sugerir', [TimeController::class, 'sugerir'])->name('times.sugerir');
     Route::resource('meus-times', TimeController::class)
         ->parameters(['meus-times' => 'time'])
         ->names('times');

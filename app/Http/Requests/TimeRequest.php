@@ -21,23 +21,23 @@ class TimeRequest extends FormRequest
             'genero' => ['required', Rule::in(['masculino', 'feminino'])],
             'creditos_limite' => ['required', 'numeric', 'min:1', 'max:999999.99'],
             'titulares' => ['required', 'array'],
-            'titulares.PON' => ['required', 'array', 'size:2'],
-            'titulares.PON.*' => ['required', 'integer', 'exists:jogadors,id'],
-            'titulares.CEN' => ['required', 'array', 'size:2'],
-            'titulares.CEN.*' => ['required', 'integer', 'exists:jogadors,id'],
-            'titulares.OPO' => ['required', 'array', 'size:1'],
-            'titulares.OPO.*' => ['required', 'integer', 'exists:jogadors,id'],
-            'titulares.LEV' => ['required', 'array', 'size:1'],
-            'titulares.LEV.*' => ['required', 'integer', 'exists:jogadors,id'],
+            'titulares.OH' => ['required', 'array', 'size:2'],
+            'titulares.OH.*' => ['required', 'integer', 'exists:jogadors,id'],
+            'titulares.MB' => ['required', 'array', 'size:2'],
+            'titulares.MB.*' => ['required', 'integer', 'exists:jogadors,id'],
+            'titulares.O' => ['required', 'array', 'size:1'],
+            'titulares.O.*' => ['required', 'integer', 'exists:jogadors,id'],
+            'titulares.S' => ['required', 'array', 'size:1'],
+            'titulares.S.*' => ['required', 'integer', 'exists:jogadors,id'],
             'reservas' => ['required', 'array'],
-            'reservas.LIB' => ['required', 'array', 'size:1'],
-            'reservas.LIB.*' => ['required', 'integer', 'exists:jogadors,id'],
-            'reservas.LEV' => ['required', 'array', 'size:1'],
-            'reservas.LEV.*' => ['required', 'integer', 'exists:jogadors,id'],
-            'reservas.OPO' => ['required', 'array', 'size:2'],
-            'reservas.OPO.*' => ['required', 'integer', 'exists:jogadors,id'],
-            'reservas.CEN' => ['required', 'array', 'size:2'],
-            'reservas.CEN.*' => ['required', 'integer', 'exists:jogadors,id'],
+            'reservas.L' => ['required', 'array', 'size:1'],
+            'reservas.L.*' => ['required', 'integer', 'exists:jogadors,id'],
+            'reservas.S' => ['required', 'array', 'size:1'],
+            'reservas.S.*' => ['required', 'integer', 'exists:jogadors,id'],
+            'reservas.O' => ['required', 'array', 'size:2'],
+            'reservas.O.*' => ['required', 'integer', 'exists:jogadors,id'],
+            'reservas.MB' => ['required', 'array', 'size:2'],
+            'reservas.MB.*' => ['required', 'integer', 'exists:jogadors,id'],
         ];
     }
 
@@ -96,8 +96,8 @@ class TimeRequest extends FormRequest
     private function slotsEsperados(): array
     {
         return [
-            'titulares' => ['PON' => 2, 'CEN' => 2, 'OPO' => 1, 'LEV' => 1],
-            'reservas' => ['LIB' => 1, 'LEV' => 1, 'OPO' => 2, 'CEN' => 2],
+            'titulares' => ['OH' => 2, 'MB' => 2, 'O' => 1, 'S' => 1],
+            'reservas' => ['L' => 1, 'S' => 1, 'O' => 2, 'MB' => 2],
         ];
     }
 }

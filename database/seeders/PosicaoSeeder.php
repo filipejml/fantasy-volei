@@ -13,11 +13,11 @@ class PosicaoSeeder extends Seeder
     public function run(): void
     {
         $posicoes = [
-            ['nome' => 'Levantador', 'sigla' => 'LEV'],
-            ['nome' => 'Oposto', 'sigla' => 'OPO'],
-            ['nome' => 'Ponteiro', 'sigla' => 'PON'],
-            ['nome' => 'Central', 'sigla' => 'CEN'],
-            ['nome' => 'Líbero', 'sigla' => 'LIB'],
+            ['nome' => 'Levantador', 'sigla' => 'S'],
+            ['nome' => 'Oposto', 'sigla' => 'O'],
+            ['nome' => 'Ponteiro', 'sigla' => 'OH'],
+            ['nome' => 'Central', 'sigla' => 'MB'],
+            ['nome' => 'Líbero', 'sigla' => 'L'],
         ];
 
         foreach ($posicoes as $posicao) {

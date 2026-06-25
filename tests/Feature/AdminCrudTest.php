@@ -92,7 +92,7 @@ class AdminCrudTest extends TestCase
         ]);
         $posicao = Posicao::create([
             'nome' => 'Ponteiro',
-            'sigla' => 'PON',
+            'sigla' => 'OH',
         ]);
 
         $this->actingAs($admin)
@@ -142,8 +142,8 @@ class AdminCrudTest extends TestCase
     {
         $admin = User::factory()->create(['role' => 0]);
         $selecao = Selecao::create(['nome' => 'Brasil', 'genero' => 'masculino', 'sigla' => 'BRA', 'ativo' => true]);
-        $ponteiro = Posicao::create(['nome' => 'Ponteiro', 'sigla' => 'PON']);
-        $libero = Posicao::create(['nome' => 'Líbero', 'sigla' => 'LIB']);
+        $ponteiro = Posicao::create(['nome' => 'Ponteiro', 'sigla' => 'OH']);
+        $libero = Posicao::create(['nome' => 'Líbero', 'sigla' => 'L']);
 
         Jogador::create([
             'selecao_id' => $selecao->id,
@@ -170,7 +170,7 @@ class AdminCrudTest extends TestCase
             ->assertOk()
             ->assertSee('Todas as posições')
             ->assertSee('Maique')
-            ->assertSee('LIB')
+            ->assertSee('L')
             ->assertDontSee('Lucarelli');
     }
 
@@ -178,7 +178,7 @@ class AdminCrudTest extends TestCase
     {
         $admin = User::factory()->create(['role' => 0]);
         $selecao = Selecao::create(['nome' => 'Brasil', 'genero' => 'masculino', 'sigla' => 'BRA', 'ativo' => true]);
-        $posicao = Posicao::create(['nome' => 'Ponteiro', 'sigla' => 'PON']);
+        $posicao = Posicao::create(['nome' => 'Ponteiro', 'sigla' => 'OH']);
 
         Jogador::create([
             'selecao_id' => $selecao->id,

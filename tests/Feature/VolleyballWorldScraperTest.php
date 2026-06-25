@@ -157,9 +157,9 @@ class VolleyballWorldScraperTest extends TestCase
 
         $this->assertSame('sucesso', $log->status, $log->mensagem);
         $this->assertDatabaseHas('selecoes', ['nome' => 'Brasil', 'sigla' => 'BRA', 'genero' => 'masculino']);
-        $this->assertDatabaseHas('posicaos', ['sigla' => 'LEV']);
-        $this->assertDatabaseHas('posicaos', ['sigla' => 'PON']);
-        $this->assertDatabaseHas('posicaos', ['sigla' => 'LIB']);
+        $this->assertDatabaseHas('posicaos', ['sigla' => 'S']);
+        $this->assertDatabaseHas('posicaos', ['sigla' => 'OH']);
+        $this->assertDatabaseHas('posicaos', ['sigla' => 'L']);
         $this->assertDatabaseHas('jogadors', ['nome' => 'Bruno Rezende', 'genero' => 'masculino']);
         $this->assertDatabaseHas('jogadors', ['nome' => 'Lucarelli', 'genero' => 'masculino']);
         $this->assertDatabaseHas('jogadors', ['nome' => 'Maique', 'genero' => 'masculino']);
@@ -191,7 +191,7 @@ class VolleyballWorldScraperTest extends TestCase
         $log = app(VolleyballWorldScraper::class)->atualizarJogadores();
 
         $this->assertSame('sucesso', $log->status, $log->mensagem);
-        $this->assertDatabaseHas('posicaos', ['sigla' => 'OPO']);
+        $this->assertDatabaseHas('posicaos', ['sigla' => 'O']);
         $this->assertDatabaseHas('jogadors', ['nome' => 'Darlan', 'genero' => 'masculino']);
     }
 

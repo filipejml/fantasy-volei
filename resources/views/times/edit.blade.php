@@ -3,7 +3,7 @@
         <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
                 <h2 class="text-xl font-bold text-slate-900">Editar {{ $time->nome }}</h2>
-                <p class="mt-1 text-sm text-slate-500">Ajuste orçamento e atletas do seu elenco.</p>
+                <p class="mt-1 text-sm text-slate-500">Ajuste orçamento, titulares e reservas do seu elenco.</p>
             </div>
             <form method="POST" action="{{ route('times.destroy', $time) }}" onsubmit="return confirm('Excluir este time?')">
                 @csrf

@@ -19,7 +19,7 @@
                 <section class="rounded-2xl bg-white p-10 text-center shadow-sm ring-1 ring-slate-200">
                     <p class="text-xs font-bold uppercase tracking-[0.2em] text-blue-700">VNL Fantasy</p>
                     <h1 class="mt-2 text-3xl font-extrabold text-slate-900">Você ainda não montou um time</h1>
-                    <p class="mx-auto mt-3 max-w-2xl text-slate-500">Escolha até 7 jogadores, respeite seu limite de créditos e salve seu elenco para acompanhar durante a competição.</p>
+                    <p class="mx-auto mt-3 max-w-2xl text-slate-500">Escolha 6 titulares e 6 reservas, respeite seu limite de créditos e salve seu elenco para acompanhar durante a competição.</p>
                     <a href="{{ route('times.create') }}" class="mt-6 inline-flex rounded-lg bg-blue-700 px-5 py-3 text-sm font-bold text-white hover:bg-blue-800">
                         Começar agora
                     </a>
@@ -47,7 +47,7 @@
                             <div class="mt-6 grid gap-3 sm:grid-cols-3">
                                 <div class="rounded-xl bg-blue-50 p-4">
                                     <p class="text-xs font-bold uppercase text-blue-700">Jogadores</p>
-                                    <p class="mt-1 text-2xl font-extrabold text-slate-900">{{ $time->jogadores->count() }}/7</p>
+                                    <p class="mt-1 text-2xl font-extrabold text-slate-900">{{ $time->jogadores->count() }}/12</p>
                                 </div>
                                 <div class="rounded-xl bg-emerald-50 p-4">
                                     <p class="text-xs font-bold uppercase text-emerald-700">Créditos</p>
