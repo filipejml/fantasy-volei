@@ -169,20 +169,8 @@
                                 $valorSelecionado = (string) data_get($selecionados, $campo, '');
                             @endphp
 
-                            <label class="relative block min-h-[148px] rounded-xl border border-slate-200 bg-slate-50 p-4 transition hover:border-blue-300 hover:bg-blue-50/40">
-                                <select
-                                    name="{{ $nomeCampo }}"
-                                    class="peer absolute inset-0 z-10 h-full w-full cursor-pointer opacity-0"
-                                    x-model="selected.titulares.{{ $sigla }}[{{ $indice }}]"
-                                    required
-                                >
-                                    <option value="">Selecione</option>
-                                    @foreach($jogadoresPorPosicao->get($sigla, collect()) as $jogador)
-                                        <option value="{{ $jogador->id }}" @selected($valorSelecionado === (string) $jogador->id)>
-                                            {{ $jogador->nome }} - {{ $jogador->selecao->nome }} - C$ {{ number_format((float) $jogador->valor_creditos, 2, ',', '.') }}
-                                        </option>
-                                    @endforeach
-                                </select>
+                            <button type="button" class="relative block min-h-[148px] w-full rounded-xl border border-slate-200 bg-slate-50 p-4 transition hover:border-blue-300 hover:bg-blue-50/40" @click="openPlayerModal('titulares', '{{ $sigla }}', {{ $indice }})">
+                                <input type="hidden" name="{{ $nomeCampo }}" x-model="selected.titulares.{{ $sigla }}[{{ $indice }}]">
 
                                 <span class="absolute right-3 top-3 rounded-full px-2 py-1 text-[11px] font-extrabold {{ $config['cor'] }}">{{ $sigla }}</span>
 
@@ -204,7 +192,7 @@
                                         </div>
                                     </template>
                                 </div>
-                            </label>
+                            </button>
                             <x-input-error :messages="$errors->get($campo)" class="mt-1" />
                         @endfor
                     @endforeach
@@ -233,20 +221,8 @@
                                 $valorSelecionado = (string) data_get($selecionados, $campo, '');
                             @endphp
 
-                            <label class="relative block rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 transition hover:border-blue-300 hover:bg-blue-50/40">
-                                <select
-                                    name="{{ $nomeCampo }}"
-                                    class="peer absolute inset-0 z-10 h-full w-full cursor-pointer opacity-0"
-                                    x-model="selected.reservas.{{ $sigla }}[{{ $indice }}]"
-                                    required
-                                >
-                                    <option value="">Selecione</option>
-                                    @foreach($jogadoresPorPosicao->get($sigla, collect()) as $jogador)
-                                        <option value="{{ $jogador->id }}" @selected($valorSelecionado === (string) $jogador->id)>
-                                            {{ $jogador->nome }} - {{ $jogador->selecao->nome }} - C$ {{ number_format((float) $jogador->valor_creditos, 2, ',', '.') }}
-                                        </option>
-                                    @endforeach
-                                </select>
+                            <button type="button" class="relative block w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-left transition hover:border-blue-300 hover:bg-blue-50/40" @click="openPlayerModal('reservas', '{{ $sigla }}', {{ $indice }})">
+                                <input type="hidden" name="{{ $nomeCampo }}" x-model="selected.reservas.{{ $sigla }}[{{ $indice }}]">
 
                                 <div class="flex min-h-8 items-center gap-3 pr-8">
                                     <span class="flex h-5 w-5 items-center justify-center rounded-full border border-slate-300 bg-white">
@@ -262,7 +238,7 @@
                                     </div>
                                     <span class="rounded-full px-2 py-0.5 text-[11px] font-extrabold {{ $config['cor'] }}">{{ $sigla }}</span>
                                 </div>
-                            </label>
+                            </button>
                             <x-input-error :messages="$errors->get($campo)" class="mt-1" />
                         @endfor
                     @endforeach
@@ -270,6 +246,60 @@
             </div>
         </div>
     </section>
+
+    <div
+        class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-4"
+        x-show="modal.open"
+        x-cloak
+        @keydown.escape.window="closePlayerModal()"
+    >
+        <div class="w-full max-w-2xl overflow-hidden rounded-2xl bg-white shadow-xl ring-1 ring-slate-200" @click.outside="closePlayerModal()">
+            <div class="flex items-start justify-between gap-4 border-b border-slate-100 p-5">
+                <div>
+                    <p class="text-xs font-bold uppercase tracking-[0.18em] text-blue-700" x-text="modal.group === 'titulares' ? 'Titular' : 'Reserva'"></p>
+                    <h3 class="mt-1 text-lg font-extrabold text-slate-900">
+                        Escolher atleta <span x-text="modal.position"></span>
+                    </h3>
+                </div>
+                <button type="button" class="rounded-lg bg-slate-100 px-3 py-2 text-sm font-bold text-slate-700 hover:bg-slate-200" @click="closePlayerModal()">
+                    Fechar
+                </button>
+            </div>
+
+            <div class="max-h-[60vh] overflow-y-auto p-5">
+                <div class="mb-4 flex items-center justify-between gap-3 rounded-xl bg-slate-50 p-3 ring-1 ring-slate-200">
+                    <span class="text-sm font-bold text-slate-700">Vaga atual</span>
+                    <button type="button" class="rounded-lg bg-white px-3 py-2 text-sm font-bold text-red-600 ring-1 ring-slate-200 hover:bg-red-50" @click="clearModalSlot()">
+                        Limpar vaga
+                    </button>
+                </div>
+
+                <div class="grid gap-3 sm:grid-cols-2">
+                    <template x-for="id in modalPlayers" :key="id">
+                        <button
+                            type="button"
+                            class="rounded-xl border p-4 text-left transition hover:border-blue-300 hover:bg-blue-50/50"
+                            :class="isSelectedInModal(id) ? 'border-blue-500 bg-blue-50' : 'border-slate-200 bg-white'"
+                            @click="selectModalPlayer(id)"
+                        >
+                            <div class="flex items-start gap-3">
+                                <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-blue-700 text-sm font-extrabold text-white" x-text="initials(player(id).nome)"></span>
+                                <div class="min-w-0 flex-1">
+                                    <p class="truncate font-extrabold text-slate-900" x-text="player(id).nome"></p>
+                                    <p class="mt-1 truncate text-sm text-slate-500" x-text="player(id).selecao"></p>
+                                    <p class="mt-2 text-sm font-bold text-blue-700">C$ <span x-text="format(player(id).creditos)"></span></p>
+                                </div>
+                            </div>
+                        </button>
+                    </template>
+                </div>
+
+                <p class="rounded-xl border border-dashed border-slate-300 p-6 text-center text-sm text-slate-500" x-show="modalPlayers.length === 0">
+                    Nenhum atleta disponivel para esta posicao.
+                </p>
+            </div>
+        </div>
+    </div>
 </div>
 
 <script>
@@ -280,6 +310,12 @@
             players,
             playersByPosition,
             randomizeError: '',
+            modal: {
+                open: false,
+                group: '',
+                position: '',
+                index: 0,
+            },
             get selectedIds() {
                 return Object.values(this.selected)
                     .flatMap((group) => Object.values(group).flat())
@@ -320,6 +356,30 @@
             },
             player(id) {
                 return id ? this.players[id] : null;
+            },
+            get modalPlayers() {
+                if (!this.modal.position) {
+                    return [];
+                }
+
+                return [...(this.playersByPosition[this.modal.position] || [])];
+            },
+            openPlayerModal(group, position, index) {
+                this.modal = { open: true, group, position, index };
+            },
+            closePlayerModal() {
+                this.modal.open = false;
+            },
+            selectModalPlayer(id) {
+                this.selected[this.modal.group][this.modal.position][this.modal.index] = String(id);
+                this.closePlayerModal();
+            },
+            clearModalSlot() {
+                this.selected[this.modal.group][this.modal.position][this.modal.index] = '';
+                this.closePlayerModal();
+            },
+            isSelectedInModal(id) {
+                return String(this.selected[this.modal.group]?.[this.modal.position]?.[this.modal.index] || '') === String(id);
             },
             initials(name) {
                 return String(name || '')
