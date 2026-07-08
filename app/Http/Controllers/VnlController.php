@@ -11,10 +11,7 @@ class VnlController extends Controller
 {
     public function index(Request $request): View
     {
-        $genero = in_array($request->query('genero'), ['masculino', 'feminino'], true)
-            ? $request->query('genero')
-            : 'masculino';
-        $temporada = (int) $request->query('temporada', config('services.volleyball_world.season'));
+        [$genero, $temporada] = $this->filtros($request);
 
         return view('vnl.index', [
             'genero' => $genero,
@@ -23,6 +20,16 @@ class VnlController extends Controller
                 ->where('temporada', $temporada)
                 ->orderBy('data_partida')
                 ->get(),
+            'temporada' => $temporada,
+        ]);
+    }
+
+    public function classificacao(Request $request): View
+    {
+        [$genero, $temporada] = $this->filtros($request);
+
+        return view('vnl.classificacao', [
+            'genero' => $genero,
             'classificacao' => Classificacao::with('selecao')
                 ->where('genero', $genero)
                 ->where('temporada', $temporada)
@@ -30,5 +37,15 @@ class VnlController extends Controller
                 ->get(),
             'temporada' => $temporada,
         ]);
+    }
+
+    private function filtros(Request $request): array
+    {
+        $genero = in_array($request->query('genero'), ['masculino', 'feminino'], true)
+            ? $request->query('genero')
+            : 'masculino';
+        $temporada = (int) $request->query('temporada', config('services.volleyball_world.season'));
+
+        return [$genero, $temporada];
     }
 }
