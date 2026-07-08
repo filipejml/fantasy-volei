@@ -1,6 +1,14 @@
 <x-app-layout>
     @php
         $temJogoAoVivo = $jogos->contains(fn ($jogo) => $jogo->status === 'ao_vivo');
+        $jogosAoVivo = $jogos->where('status', 'ao_vivo');
+        $jogosFuturos = $jogos->reject(fn ($jogo) => in_array($jogo->status, ['ao_vivo', 'encerrado'], true));
+        $jogosFinalizados = $jogos->where('status', 'encerrado')->sortByDesc('data_partida');
+        $gruposDeJogos = [
+            ['titulo' => 'Ao vivo', 'descricao' => 'Partidas em andamento agora.', 'jogos' => $jogosAoVivo, 'mostrar' => $jogosAoVivo->isNotEmpty(), 'aberto' => $jogosAoVivo->isNotEmpty()],
+            ['titulo' => 'Próximos jogos', 'descricao' => 'Partidas que ainda não ocorreram.', 'jogos' => $jogosFuturos, 'mostrar' => true, 'aberto' => false],
+            ['titulo' => 'Finalizados', 'descricao' => 'Resultados já encerrados.', 'jogos' => $jogosFinalizados, 'mostrar' => true, 'aberto' => false],
+        ];
     @endphp
 
     <x-slot name="header">
@@ -19,101 +27,44 @@
 
     <div class="py-8">
         <div class="mx-auto max-w-7xl space-y-8 px-4 sm:px-6 lg:px-8">
-            <section>
+            <section class="space-y-7">
                 <div class="mb-4">
                     <h3 class="text-xl font-extrabold">Jogos e resultados</h3>
                     <p class="text-sm text-slate-500">Dados persistidos no sistema, importados da Volleyball World ou corrigidos manualmente.</p>
                 </div>
-                <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-                    @forelse($jogos as $jogo)
-                        @php
-                            $sets = collect($jogo->sets ?? []);
-                            $ultimoSet = $sets->last();
-                            $pontosCasa = data_get($ultimoSet, 'pointsTeamA');
-                            $pontosFora = data_get($ultimoSet, 'pointsTeamB');
-                            $temPontosAoVivo = $jogo->status === 'ao_vivo' && ($pontosCasa || $pontosFora);
-                        @endphp
 
-                        <article class="rounded-2xl bg-white p-5 shadow-sm ring-1 {{ $jogo->status === 'ao_vivo' ? 'ring-red-200' : 'ring-slate-200' }}">
-                            <div class="mb-5 flex justify-between text-xs font-bold uppercase text-slate-500">
-                                <span>{{ $jogo->data_partida->format('d/m - H:i') }}</span>
-                                <span class="{{ $jogo->status === 'ao_vivo' ? 'rounded-full bg-red-600 px-3 py-1 text-white' : 'text-blue-700' }}">{{ str($jogo->status)->replace('_', ' ')->title() }}</span>
+                @if($jogos->isEmpty())
+                    <div class="rounded-2xl bg-white p-10 text-center text-slate-500">
+                        Nenhuma partida cadastrada para esta categoria.
+                    </div>
+                @endif
+
+                @foreach($gruposDeJogos as $grupo)
+                    @continue(! $grupo['mostrar'])
+
+                    <details class="group rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-200" @if($grupo['aberto']) open @endif>
+                        <summary class="flex cursor-pointer list-none items-center justify-between gap-4">
+                            <div>
+                                <h4 class="text-lg font-extrabold text-slate-900">{{ $grupo['titulo'] }}</h4>
+                                <p class="text-sm text-slate-500">{{ $grupo['descricao'] }}</p>
                             </div>
-
-                            @foreach([[$jogo->selecaoCasa, $jogo->placar_casa], [$jogo->selecaoFora, $jogo->placar_fora]] as [$selecao, $placar])
-                                <div class="mb-4 flex items-center gap-3">
-                                    @if($selecao->bandeira)
-                                        <img src="{{ $selecao->bandeira }}" class="h-9 w-11 object-contain" alt="">
-                                    @else
-                                        <span class="flex h-9 w-11 items-center justify-center rounded bg-blue-50 text-sm font-bold text-blue-700">{{ $selecao->sigla ?? 'VNL' }}</span>
-                                    @endif
-                                    <span class="flex-1 font-bold">{{ $selecao->nome }}</span>
-                                    <strong class="text-2xl">{{ $placar !== null && $placar >= 0 ? $placar : 0 }}</strong>
-                                </div>
-                            @endforeach
-
-                            @if($temPontosAoVivo)
-                                <div class="mt-4 rounded-lg bg-red-50 px-3 py-2 text-sm font-bold text-red-700 ring-1 ring-red-100">
-                                    Set atual: {{ $pontosCasa }} x {{ $pontosFora }}
-                                </div>
-                            @elseif($sets->isNotEmpty())
-                                <div class="mt-4 text-xs text-slate-500">
-                                    Parciais: {{ $sets->map(fn ($set) => data_get($set, 'pointsTeamA', 0).'x'.data_get($set, 'pointsTeamB', 0))->join(', ') }}
-                                </div>
-                            @endif
-
-                            <div class="mt-4 border-t pt-3 text-xs text-slate-500">
-                                {{ collect([$jogo->rodada, $jogo->local])->filter()->join(' - ') }}
+                            <div class="flex items-center gap-3">
+                                <span class="rounded-full bg-slate-100 px-3 py-1 text-sm font-bold text-slate-600">{{ $grupo['jogos']->count() }}</span>
+                                <span class="text-xl font-bold text-slate-400 transition group-open:rotate-180">⌄</span>
                             </div>
-                        </article>
-                    @empty
-                        <div class="rounded-2xl bg-white p-10 text-center text-slate-500 md:col-span-2 xl:col-span-3">
-                            Nenhuma partida cadastrada para esta categoria.
-                        </div>
-                    @endforelse
-                </div>
-            </section>
+                        </summary>
 
-            <section>
-                <div class="mb-4">
-                    <h3 class="text-xl font-extrabold">Classificação</h3>
-                    <p class="text-sm text-slate-500">Tabela importada ou mantida manualmente pelo administrador.</p>
-                </div>
-                <div class="overflow-x-auto rounded-2xl bg-white shadow-sm ring-1 ring-slate-200">
-                    <table class="min-w-full divide-y">
-                        <thead class="bg-slate-50">
-                            <tr>
-                                @foreach(['#', 'Seleção', 'J', 'V', 'D', 'Sets', 'Pts'] as $h)
-                                    <th class="px-4 py-3 text-left text-xs font-bold uppercase text-slate-500">{{ $h }}</th>
-                                @endforeach
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y">
-                            @forelse($classificacao as $linha)
-                                <tr>
-                                    <td class="px-4 py-4 font-extrabold text-blue-700">{{ $linha->posicao }}</td>
-                                    <td class="px-4 py-4">
-                                        <div class="flex items-center gap-3">
-                                            @if($linha->selecao->bandeira)
-                                                <img src="{{ $linha->selecao->bandeira }}" class="h-7 w-9 object-contain" alt="">
-                                            @endif
-                                            <strong>{{ $linha->selecao->nome }}</strong>
-                                        </div>
-                                    </td>
-                                    <td class="px-4 py-4">{{ $linha->jogos }}</td>
-                                    <td class="px-4 py-4 font-bold text-emerald-700">{{ $linha->vitorias }}</td>
-                                    <td class="px-4 py-4 font-bold text-red-600">{{ $linha->derrotas }}</td>
-                                    <td class="px-4 py-4">{{ $linha->sets_pro }}:{{ $linha->sets_contra }}</td>
-                                    <td class="px-4 py-4 text-lg font-extrabold">{{ $linha->pontos }}</td>
-                                </tr>
+                        <div class="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                            @forelse($grupo['jogos'] as $jogo)
+                                @include('vnl._jogo-card', ['jogo' => $jogo])
                             @empty
-                                <tr>
-                                    <td colspan="7" class="p-10 text-center text-slate-500">Classificação ainda não cadastrada.</td>
-                                </tr>
+                                <div class="rounded-2xl bg-white p-10 text-center text-slate-500 md:col-span-2 xl:col-span-3">
+                                    Nenhuma partida nesta seção.
+                                </div>
                             @endforelse
-                        </tbody>
-                    </table>
-                </div>
+                        </div>
+                    </details>
+                @endforeach
             </section>
         </div>
     </div>
