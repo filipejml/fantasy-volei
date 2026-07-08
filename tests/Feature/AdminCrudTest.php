@@ -202,6 +202,41 @@ class AdminCrudTest extends TestCase
             ->assertDontSee('Lucarelli');
     }
 
+    public function test_admin_can_filter_jogadores_by_gender(): void
+    {
+        $admin = User::factory()->create(['role' => 0]);
+        $brasilMasculino = Selecao::create(['nome' => 'Brasil Masculino', 'genero' => 'masculino', 'sigla' => 'BRA', 'ativo' => true]);
+        $brasilFeminino = Selecao::create(['nome' => 'Brasil Feminino', 'genero' => 'feminino', 'sigla' => 'BRF', 'ativo' => true]);
+        $posicao = Posicao::create(['nome' => 'Ponteiro', 'sigla' => 'OH']);
+
+        Jogador::create([
+            'selecao_id' => $brasilMasculino->id,
+            'posicao_id' => $posicao->id,
+            'nome' => 'Lucarelli',
+            'genero' => 'masculino',
+            'valor_creditos' => 10,
+            'media_pontos' => 0,
+            'ativo' => true,
+        ]);
+
+        Jogador::create([
+            'selecao_id' => $brasilFeminino->id,
+            'posicao_id' => $posicao->id,
+            'nome' => 'Gabi',
+            'genero' => 'feminino',
+            'valor_creditos' => 10,
+            'media_pontos' => 0,
+            'ativo' => true,
+        ]);
+
+        $this->actingAs($admin)
+            ->get(route('admin.jogadores.index', ['genero' => 'feminino']))
+            ->assertOk()
+            ->assertSee('Gabi')
+            ->assertSee('value="feminino" selected', false)
+            ->assertDontSee('Lucarelli');
+    }
+
     public function test_admin_can_sort_jogadores_by_name_and_value(): void
     {
         $admin = User::factory()->create(['role' => 0]);

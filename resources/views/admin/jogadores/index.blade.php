@@ -34,10 +34,16 @@
         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             @include('admin.partials.flash')
 
-            <form method="GET" class="mb-6 grid gap-3 rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-200 lg:grid-cols-[1fr_220px_220px_auto_auto]">
+            <form method="GET" class="mb-6 grid gap-3 rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-200 lg:grid-cols-[1fr_180px_220px_220px_auto_auto]">
                 <input type="hidden" name="ordenar" value="{{ $ordenarPor }}">
                 <input type="hidden" name="direcao" value="{{ $direcao }}">
                 <input name="busca" value="{{ request('busca') }}" placeholder="Buscar por nome..." class="rounded-lg border-slate-300 focus:border-blue-500 focus:ring-blue-500">
+
+                <select name="genero" class="rounded-lg border-slate-300 focus:border-blue-500 focus:ring-blue-500">
+                    <option value="">Todos os generos</option>
+                    <option value="masculino" @selected($genero === 'masculino')>Masculino</option>
+                    <option value="feminino" @selected($genero === 'feminino')>Feminino</option>
+                </select>
 
                 <select name="selecao_id" class="rounded-lg border-slate-300 focus:border-blue-500 focus:ring-blue-500">
                     <option value="">Todas as seleções</option>

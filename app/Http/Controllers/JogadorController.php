@@ -18,6 +18,9 @@ class JogadorController extends Controller
     {
         $ordenarPor = request('ordenar', 'created_at');
         $direcao = request('direcao') === 'asc' ? 'asc' : 'desc';
+        $genero = in_array(request('genero'), ['masculino', 'feminino'], true)
+            ? request('genero')
+            : null;
 
         if (! in_array($ordenarPor, ['nome', 'selecao', 'posicao', 'valor_creditos', 'created_at'], true)) {
             $ordenarPor = 'created_at';
@@ -27,6 +30,9 @@ class JogadorController extends Controller
             ->with(['selecao', 'posicao'])
             ->when(request('busca'), function ($query, $busca) {
                 $query->where('nome', 'like', "%{$busca}%");
+            })
+            ->when($genero, function ($query, $genero) {
+                $query->where('genero', $genero);
             })
             ->when(request('selecao_id'), function ($query, $selecaoId) {
                 $query->where('selecao_id', $selecaoId);
@@ -57,7 +63,7 @@ class JogadorController extends Controller
         $selecoes = Selecao::orderBy('nome')->get(['id', 'nome']);
         $posicoes = Posicao::orderBy('nome')->get(['id', 'nome', 'sigla']);
 
-        return view('admin.jogadores.index', compact('jogadores', 'selecoes', 'posicoes', 'ordenarPor', 'direcao'));
+        return view('admin.jogadores.index', compact('jogadores', 'selecoes', 'posicoes', 'ordenarPor', 'direcao', 'genero'));
     }
 
     /**
