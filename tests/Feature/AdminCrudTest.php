@@ -237,6 +237,32 @@ class AdminCrudTest extends TestCase
             ->assertDontSee('Lucarelli');
     }
 
+    public function test_admin_posicoes_page_shows_player_preview_cards(): void
+    {
+        $admin = User::factory()->create(['role' => 0]);
+        $selecao = Selecao::create(['nome' => 'Brasil', 'genero' => 'masculino', 'sigla' => 'BRA', 'ativo' => true]);
+        $posicao = Posicao::create(['nome' => 'Ponteiro', 'sigla' => 'OH']);
+
+        Jogador::create([
+            'selecao_id' => $selecao->id,
+            'posicao_id' => $posicao->id,
+            'nome' => 'Lucarelli',
+            'genero' => 'masculino',
+            'valor_creditos' => 10,
+            'media_pontos' => 0,
+            'ativo' => true,
+        ]);
+
+        $this->actingAs($admin)
+            ->get(route('admin.posicoes.index'))
+            ->assertOk()
+            ->assertSee('Ponteiro')
+            ->assertSee('Pre-lista')
+            ->assertSee('Lucarelli')
+            ->assertSee('Brasil - Masculino')
+            ->assertSee(route('admin.jogadores.index', ['posicao_id' => $posicao->id]), false);
+    }
+
     public function test_admin_can_sort_jogadores_by_name_and_value(): void
     {
         $admin = User::factory()->create(['role' => 0]);

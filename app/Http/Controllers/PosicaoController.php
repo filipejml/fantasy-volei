@@ -15,7 +15,15 @@ class PosicaoController extends Controller
     public function index(): View
     {
         return view('admin.posicoes.index', [
-            'posicoes' => Posicao::withCount('jogadores')->orderBy('nome')->get(),
+            'posicoes' => Posicao::withCount('jogadores')
+                ->with(['jogadores' => function ($query) {
+                    $query->with('selecao')
+                        ->where('ativo', true)
+                        ->orderBy('nome')
+                        ->limit(5);
+                }])
+                ->orderBy('nome')
+                ->get(),
         ]);
     }
 
