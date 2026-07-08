@@ -30,6 +30,7 @@ Route::get('/dashboard', function () {
 
 Route::middleware('auth')->group(function () {
     Route::get('/vnl', [VnlController::class, 'index'])->name('vnl.index');
+    Route::get('/vnl/classificacao', [VnlController::class, 'classificacao'])->name('vnl.classificacao');
     Route::resource('meus-times', TimeController::class)
         ->parameters(['meus-times' => 'time'])
         ->names('times');
