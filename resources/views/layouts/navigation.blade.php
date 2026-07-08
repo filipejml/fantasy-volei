@@ -51,8 +51,6 @@
                                 <x-slot name="content">
                                     <x-dropdown-link :href="route('admin.selecoes.index')">Seleções</x-dropdown-link>
                                     <x-dropdown-link :href="route('admin.jogadores.index')">Jogadores</x-dropdown-link>
-                                    <x-dropdown-link :href="route('admin.partidas.index')">Partidas</x-dropdown-link>
-                                    <x-dropdown-link :href="route('admin.classificacoes.index')">Classificação</x-dropdown-link>
                                     <x-dropdown-link :href="route('admin.posicoes.index')">Posições</x-dropdown-link>
                                     <x-dropdown-link :href="route('admin.scraping.index')">Atualizar VNL</x-dropdown-link>
                                 </x-slot>
@@ -129,8 +127,6 @@
                 </div>
                 <x-responsive-nav-link :href="route('admin.selecoes.index')" :active="request()->routeIs('admin.selecoes.*')">Seleções</x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('admin.jogadores.index')" :active="request()->routeIs('admin.jogadores.*')">Jogadores</x-responsive-nav-link>
-                <x-responsive-nav-link :href="route('admin.partidas.index')" :active="request()->routeIs('admin.partidas.*')">Partidas</x-responsive-nav-link>
-                <x-responsive-nav-link :href="route('admin.classificacoes.index')" :active="request()->routeIs('admin.classificacoes.*')">Classificação</x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('admin.posicoes.index')" :active="request()->routeIs('admin.posicoes.*')">Posições</x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('admin.scraping.index')" :active="request()->routeIs('admin.scraping.*')">Atualizar VNL</x-responsive-nav-link>
             @endif
