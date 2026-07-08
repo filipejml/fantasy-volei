@@ -7,6 +7,7 @@ use App\Models\Jogador;
 use App\Models\Posicao;
 use App\Models\Selecao;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class JogadorController extends Controller
@@ -117,6 +118,17 @@ class JogadorController extends Controller
         return redirect()
             ->route('admin.jogadores.show', $jogador)
             ->with('success', 'Jogador atualizado com sucesso.');
+    }
+
+    public function atualizarValor(Request $request, Jogador $jogador): RedirectResponse
+    {
+        $dados = $request->validate([
+            'valor_creditos' => ['required', 'numeric', 'min:0', 'max:999999.99'],
+        ]);
+
+        $jogador->update($dados);
+
+        return back()->with('success', 'Valor do jogador atualizado.');
     }
 
     /**

@@ -48,6 +48,7 @@ Route::middleware(['auth', 'admin'])
             ->parameters(['selecoes' => 'selecao']);
         Route::resource('jogadores', JogadorController::class)
             ->parameters(['jogadores' => 'jogador']);
+        Route::patch('jogadores/{jogador}/valor', [JogadorController::class, 'atualizarValor'])->name('jogadores.valor');
         Route::post('jogadores/atualizar-vw', [ScrapingController::class, 'atualizarJogadores'])->name('jogadores.atualizar-vw');
         Route::resource('posicoes', PosicaoController::class)
             ->parameters(['posicoes' => 'posicao']);

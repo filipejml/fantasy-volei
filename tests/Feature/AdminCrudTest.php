@@ -202,6 +202,36 @@ class AdminCrudTest extends TestCase
             ->assertDontSee('Lucarelli');
     }
 
+    public function test_admin_can_update_player_value_from_listing(): void
+    {
+        $admin = User::factory()->create(['role' => 0]);
+        $selecao = Selecao::create(['nome' => 'Brasil', 'genero' => 'masculino', 'sigla' => 'BRA', 'ativo' => true]);
+        $posicao = Posicao::create(['nome' => 'Ponteiro', 'sigla' => 'OH']);
+        $jogador = Jogador::create([
+            'selecao_id' => $selecao->id,
+            'posicao_id' => $posicao->id,
+            'nome' => 'Lucarelli',
+            'genero' => 'masculino',
+            'valor_creditos' => 10,
+            'media_pontos' => 0,
+            'ativo' => true,
+        ]);
+
+        $this->actingAs($admin)
+            ->get(route('admin.jogadores.index'))
+            ->assertOk()
+            ->assertSee(route('admin.jogadores.valor', $jogador), false);
+
+        $this->actingAs($admin)
+            ->patch(route('admin.jogadores.valor', $jogador), ['valor_creditos' => 18.75])
+            ->assertRedirect();
+
+        $this->assertDatabaseHas('jogadors', [
+            'id' => $jogador->id,
+            'valor_creditos' => 18.75,
+        ]);
+    }
+
     public function test_admin_can_filter_jogadores_by_gender(): void
     {
         $admin = User::factory()->create(['role' => 0]);
@@ -297,6 +327,6 @@ class AdminCrudTest extends TestCase
         $this->actingAs($admin)
             ->get(route('admin.jogadores.index', ['ordenar' => 'valor_creditos', 'direcao' => 'desc']))
             ->assertOk()
-            ->assertSeeTextInOrder(['Ana', 'C$ 20,00', 'Zed', 'C$ 5,00']);
+            ->assertSeeInOrder(['Ana', 'value="20.00"', 'Zed', 'value="5.00"'], false);
     }
 }

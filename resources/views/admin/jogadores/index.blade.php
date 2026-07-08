@@ -102,7 +102,26 @@
                                     </td>
                                     <td class="px-6 py-4 text-sm text-slate-600">{{ $jogador->selecao->nome }}</td>
                                     <td class="px-6 py-4 text-sm text-slate-600">{{ $jogador->posicao->sigla }}</td>
-                                    <td class="px-6 py-4 text-sm font-bold text-blue-700">C$ {{ number_format($jogador->valor_creditos, 2, ',', '.') }}</td>
+                                    <td class="px-6 py-4">
+                                        <form method="POST" action="{{ route('admin.jogadores.valor', $jogador) }}" class="flex items-center gap-2">
+                                            @csrf
+                                            @method('PATCH')
+                                            <span class="text-sm font-bold text-blue-700">C$</span>
+                                            <input
+                                                type="number"
+                                                name="valor_creditos"
+                                                value="{{ old('valor_creditos', $jogador->valor_creditos) }}"
+                                                min="0"
+                                                max="999999.99"
+                                                step="0.01"
+                                                class="w-24 rounded-lg border-slate-300 text-sm font-bold text-slate-900 focus:border-blue-500 focus:ring-blue-500"
+                                                aria-label="Valor em creditos de {{ $jogador->nome }}"
+                                            >
+                                            <button class="rounded-lg bg-blue-700 px-3 py-2 text-xs font-bold text-white hover:bg-blue-800">
+                                                Salvar
+                                            </button>
+                                        </form>
+                                    </td>
                                     <td class="px-6 py-4"><span class="rounded-full px-2.5 py-1 text-xs font-bold {{ $jogador->ativo ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-600' }}">{{ $jogador->ativo ? 'Ativo' : 'Inativo' }}</span></td>
                                     <td class="px-6 py-4 text-right text-sm">
                                         <a href="{{ route('admin.jogadores.show', $jogador) }}" class="font-semibold text-blue-700 hover:text-blue-900">Ver</a>
