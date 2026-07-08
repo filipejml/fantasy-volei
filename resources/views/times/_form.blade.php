@@ -233,7 +233,11 @@
                                             <p class="truncate text-slate-700">Reserva livre</p>
                                         </template>
                                         <template x-if="player(selected.reservas.{{ $sigla }}[{{ $indice }}])">
-                                            <p class="truncate font-bold text-slate-900" x-text="player(selected.reservas.{{ $sigla }}[{{ $indice }}]).nome"></p>
+                                            <div>
+                                                <p class="truncate font-bold text-slate-900" x-text="player(selected.reservas.{{ $sigla }}[{{ $indice }}]).nome"></p>
+                                                <p class="mt-0.5 truncate text-xs text-slate-500" x-text="player(selected.reservas.{{ $sigla }}[{{ $indice }}]).selecao"></p>
+                                                <p class="mt-1 text-xs font-bold text-blue-700">C$ <span x-text="format(player(selected.reservas.{{ $sigla }}[{{ $indice }}]).creditos)"></span></p>
+                                            </div>
                                         </template>
                                     </div>
                                     <span class="rounded-full px-2 py-0.5 text-[11px] font-extrabold {{ $config['cor'] }}">{{ $sigla }}</span>
